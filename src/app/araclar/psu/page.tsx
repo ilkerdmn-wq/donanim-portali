@@ -3,7 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Cpu, Monitor, Zap, ShieldCheck, Sparkles, HardDrive } from "lucide-react";
-import { hardwareData, HardwareItem } from "@/data/hardwareData";
+import { hardwareData, HardwareItem as BaseHardwareItem } from "@/data/hardwareData";
+
+type HardwareItem = BaseHardwareItem & {
+  description?: string | null;
+  brand?: string | null;
+};
 
 export default function PsuHesaplayiciPage() {
   const [selectedCpu, setSelectedCpu] = useState<HardwareItem | null>(hardwareData.islemci[3] || null);
