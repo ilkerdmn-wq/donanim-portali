@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Donanım Portalı"
+description = "Türkçe PC donanım haberleri, donanım karşılaştırmaları, sistem önerileri ve performans hesaplayıcılarını bir araya getiren web uygulaması."
+version = "1.0.0"
+id = "artifacts/donanim-portali"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22540
+
+[services.development]
+run = "pnpm --filter @workspace/donanim-portali run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/donanim-portali", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/donanim-portali/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22540"
+BASE_PATH = "/"
