@@ -18,6 +18,7 @@ import {
   Wrench,
   Layers,
   Mail,
+  BookOpen,
   Construction,
   LogOut,
   LayoutDashboard,
@@ -214,11 +215,35 @@ function PortalShell({
       icon: Layers,
     },
     {
+      href: "/rehber",
+      label: "Rehber",
+      icon: BookOpen,
+    },
+    {
       href: "/iletisim",
       label: "İletişim",
       icon: Mail,
     },
   ];
+
+  const isActiveLink = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+
+    if (href === "/araclar/pc-oneri") {
+      return pathname.startsWith("/araclar/pc-oneri");
+    }
+
+    if (href === "/araclar") {
+      return (
+        pathname.startsWith("/araclar") &&
+        !pathname.startsWith("/araclar/pc-oneri")
+      );
+    }
+
+    return pathname.startsWith(href);
+  };
 
   return (
     <>
@@ -254,15 +279,15 @@ function PortalShell({
           <nav className="hidden md:flex items-center gap-1 bg-zinc-900/50 border border-zinc-800/80 px-3 py-1.5 rounded-2xl">
             {publicLinks.map((item) => {
               const Icon = item.icon;
-              const isDonanim =
-                item.href === "/donanim";
+              const active =
+                isActiveLink(item.href);
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={
-                    isDonanim
+                    active
                       ? "px-3.5 py-1.5 rounded-xl text-xs font-bold text-cyan-400 bg-cyan-950/40 border border-cyan-900/50 transition-all flex items-center gap-1.5 shadow-sm"
                       : "px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800/60 transition-all flex items-center gap-1.5"
                   }
@@ -359,6 +384,8 @@ function PortalShell({
             <nav className="flex flex-col gap-2 mt-5">
               {publicLinks.map((item) => {
                 const Icon = item.icon;
+                const active =
+                  isActiveLink(item.href);
 
                 return (
                   <Link
@@ -367,11 +394,19 @@ function PortalShell({
                     onClick={() =>
                       setMobileMenuOpen(false)
                     }
-                    className="flex items-center gap-3 px-4 py-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 text-sm font-bold text-zinc-300 hover:text-white hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all"
+                    className={
+                      active
+                        ? "flex items-center gap-3 px-4 py-4 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 text-sm font-black text-cyan-300 transition-all"
+                        : "flex items-center gap-3 px-4 py-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 text-sm font-bold text-zinc-300 hover:text-white hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all"
+                    }
                   >
                     <Icon
                       size={18}
-                      className="text-cyan-400"
+                      className={
+                        active
+                          ? "text-cyan-300"
+                          : "text-cyan-400"
+                      }
                     />
                     {item.label}
                   </Link>

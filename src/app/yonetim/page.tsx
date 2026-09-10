@@ -17,6 +17,7 @@ import {
   HardDrive,
   Newspaper,
   Mail,
+  BookOpen,
   Settings,
   ArrowRight,
   ShieldCheck,
@@ -85,6 +86,12 @@ const contentCards = [
     description: "Portalın genel ayarlarını ve yapılandırmasını yönet.",
     href: "/yonetim/ayarlar",
     icon: Settings,
+  },
+  {
+    title: "Rehber Yönetimi",
+    description: "SEO rehberlerini oluştur, düzenle ve yayınla.",
+    href: "/yonetim/rehberler",
+    icon: BookOpen,
   },
   {
     title: "Gelen Mesajlar",
