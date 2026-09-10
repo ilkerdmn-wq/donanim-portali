@@ -11,22 +11,94 @@ import SiteShell from "./components/SiteShell";
 import ScrollToTop from "./components/ScrollToTop";
 
 const geistSans = Geist({
-  variable:
-    "--font-geist-sans",
+  variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono =
-  Geist_Mono({
-    variable:
-      "--font-geist-mono",
-    subsets: ["latin"],
-  });
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-  title: "Donanım Portalı",
+  metadataBase: new URL(
+    "https://donanim-portali.vercel.app"
+  ),
+
+  title: {
+    default: "Donanım Portalı",
+    template: "%s | Donanım Portalı",
+  },
+
   description:
-    "Yeni nesil teknoloji üssü ve donanım rehberi",
+    "Güncel donanım haberleri, PC toplama araçları, FPS ve darboğaz hesaplayıcıları, PSU hesaplama ve bilgisayar donanımı rehberleri.",
+
+  verification: {
+    google:
+      "Z2Mu8qKQpPKFOlm7jrw5OIRQQqmp1KAHLshmrj7T3a4",
+  },
+
+  keywords: [
+    "donanım",
+    "bilgisayar donanımı",
+    "pc toplama",
+    "ekran kartı",
+    "işlemci",
+    "anakart",
+    "ram",
+    "ssd",
+    "güç kaynağı",
+    "fps hesaplama",
+    "darboğaz hesaplama",
+    "psu hesaplama",
+    "pc önerisi",
+    "teknoloji haberleri",
+  ],
+
+  authors: [
+    {
+      name: "Donanım Portalı",
+    },
+  ],
+
+  creator: "Donanım Portalı",
+  publisher: "Donanım Portalı",
+
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+
+  openGraph: {
+    type: "website",
+    locale: "tr_TR",
+    url: "https://donanim-portali.vercel.app",
+    siteName: "Donanım Portalı",
+    title: "Donanım Portalı",
+    description:
+      "Güncel donanım haberleri, PC toplama ve sistem analiz araçları.",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Donanım Portalı",
+    description:
+      "Güncel donanım haberleri, PC toplama ve sistem analiz araçları.",
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -44,7 +116,6 @@ export default function RootLayout({
       >
         <SiteShell>
           <ScrollToTop />
-
           {children}
         </SiteShell>
       </body>
