@@ -80,9 +80,7 @@ async function getPublishedGuides(): Promise<
           Authorization:
             `Bearer ${anonKey}`,
         },
-        next: {
-          revalidate: 300,
-        },
+        cache: "no-store",
       }
     );
 
@@ -140,6 +138,7 @@ export default async function GuidesPage() {
               <p className="text-[10px] font-black tracking-[0.14em] text-cyan-400 uppercase">
                 YAYINDAKİ REHBERLER
               </p>
+
               <h2 className="mt-1 text-2xl font-black text-white">
                 Güncel içerikler
               </h2>
@@ -157,6 +156,7 @@ export default async function GuidesPage() {
                 size={32}
                 className="mx-auto text-zinc-700"
               />
+
               <p className="mt-4 text-sm font-bold text-zinc-400">
                 Henüz yayınlanmış rehber bulunmuyor.
               </p>
@@ -177,7 +177,7 @@ export default async function GuidesPage() {
                           src={
                             guide.cover_image_url
                           }
-                          alt=""
+                          alt={guide.title}
                           className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                         />
                       </div>
@@ -211,6 +211,7 @@ export default async function GuidesPage() {
 
                       <div className="mt-5 inline-flex items-center gap-2 text-xs font-black text-cyan-400">
                         Rehberi Oku
+
                         <ArrowRight
                           size={14}
                           className="group-hover:translate-x-1 transition-transform"
