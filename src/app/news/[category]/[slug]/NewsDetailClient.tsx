@@ -320,11 +320,8 @@ export default function NewsDetailClient({
     setNews(data as NewsItem);
 
     /*
-      AYNI KATEGORİDEN DİĞER HABERLER
+      TÜM KATEGORİLERDEN RASTGELE DİĞER HABERLER
     */
-
-    const actualCategory =
-      String(data.category || categoryInfo.dbName).trim();
 
     const { data: otherData, error: otherError } =
       await supabase
@@ -332,10 +329,9 @@ export default function NewsDetailClient({
         .select(
           "id,title,slug,excerpt,image_url,category,published,featured,created_at"
         )
-        .ilike("category", actualCategory)
         .eq("published", true)
         .neq("id", data.id)
-        .limit(10);
+        .limit(50);
 
     if (otherError) {
       console.error(
@@ -549,7 +545,7 @@ export default function NewsDetailClient({
                 </p>
 
                 <h2 className="text-2xl font-black mt-1">
-                  Diğer {categoryInfo.title} Haberleri
+                  Rastgele Önerilen Haberler
                 </h2>
               </div>
             </div>
@@ -627,12 +623,12 @@ export default function NewsDetailClient({
 
         <div className="border-t border-zinc-800 mt-10 pt-7">
           <Link
-            href={`/news/${actualCategorySlug}`}
+            href="/news"
             className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-xs font-black transition-all"
           >
             <ArrowLeft size={14} />
 
-            Diğer {categoryInfo.title} Haberleri
+            Tüm Haberlere Dön
           </Link>
         </div>
       </article>
