@@ -541,11 +541,11 @@ export default function NewsDetailClient({
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p className="text-[10px] font-black tracking-[0.18em] text-cyan-400 uppercase">
-                  DEVAMINI KEŞFET
+                  ÖNERİLEN İÇERİKLER
                 </p>
 
                 <h2 className="text-2xl font-black mt-1">
-                  Rastgele Önerilen Haberler
+                  Bunlar da İlginizi Çekebilir
                 </h2>
               </div>
             </div>
