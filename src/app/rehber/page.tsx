@@ -23,19 +23,46 @@ const SITE_URL =
   "https://donanim-portali.vercel.app";
 
 export const metadata: Metadata = {
-  title: "Donanım Rehberleri",
+  title:
+    "Donanım Rehberleri",
+
   description:
     "PSU, ekran kartı, işlemci, darboğaz, FPS, uyumluluk ve PC toplama konularında güncel Donanım Portalı rehberleri.",
+
   alternates: {
-    canonical: "/rehber",
+    canonical:
+      `${SITE_URL}/rehber`,
   },
+
   openGraph: {
+    type:
+      "website",
+
+    locale:
+      "tr_TR",
+
+    url:
+      `${SITE_URL}/rehber`,
+
+    siteName:
+      "Donanım Portalı",
+
     title:
-      "Donanım Rehberleri | Donanım Portalı",
+      "Donanım Rehberleri",
+
     description:
       "Bilgisayar donanımı ve PC toplama hakkında pratik, teknik ve kullanıcı odaklı rehberler.",
-    url: "/rehber",
-    type: "website",
+  },
+
+  twitter: {
+    card:
+      "summary_large_image",
+
+    title:
+      "Donanım Rehberleri",
+
+    description:
+      "Bilgisayar donanımı ve PC toplama hakkında pratik, teknik ve kullanıcı odaklı rehberler.",
   },
 };
 
@@ -43,18 +70,24 @@ async function getPublishedGuides(): Promise<
   GuideRow[]
 > {
   const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL;
+    process.env
+      .NEXT_PUBLIC_SUPABASE_URL;
 
   const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    process.env
+      .NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !anonKey) {
+  if (
+    !supabaseUrl ||
+    !anonKey
+  ) {
     return [];
   }
 
-  const url = new URL(
-    `${supabaseUrl}/rest/v1/guides`
-  );
+  const url =
+    new URL(
+      `${supabaseUrl}/rest/v1/guides`
+    );
 
   url.searchParams.set(
     "select",
@@ -72,19 +105,26 @@ async function getPublishedGuides(): Promise<
   );
 
   try {
-    const response = await fetch(
-      url.toString(),
-      {
-        headers: {
-          apikey: anonKey,
-          Authorization:
-            `Bearer ${anonKey}`,
-        },
-        cache: "no-store",
-      }
-    );
+    const response =
+      await fetch(
+        url.toString(),
+        {
+          headers: {
+            apikey:
+              anonKey,
 
-    if (!response.ok) {
+            Authorization:
+              `Bearer ${anonKey}`,
+          },
+
+          cache:
+            "no-store",
+        }
+      );
+
+    if (
+      !response.ok
+    ) {
       console.error(
         "Rehberler alınamadı:",
         response.status,
@@ -97,7 +137,9 @@ async function getPublishedGuides(): Promise<
     return (
       (await response.json()) as GuideRow[]
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Rehber listeleme hatası:",
       error
@@ -177,7 +219,9 @@ export default async function GuidesPage() {
                           src={
                             guide.cover_image_url
                           }
-                          alt={guide.title}
+                          alt={
+                            guide.title
+                          }
                           className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                         />
                       </div>

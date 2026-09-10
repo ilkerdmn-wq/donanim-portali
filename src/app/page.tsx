@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Sparkles,
@@ -16,6 +17,33 @@ import {
 } from "lucide-react";
 
 import HomeNews from "./components/HomeNews";
+
+const SITE_URL =
+  "https://donanim-portali.vercel.app";
+
+export const metadata: Metadata = {
+  title: "Donanım Portalı",
+  description:
+    "Güncel donanım haberleri, PC toplama araçları, FPS ve darboğaz hesaplayıcıları, PSU hesaplama ve bilgisayar donanımı rehberleri.",
+  alternates: {
+    canonical: SITE_URL,
+  },
+  openGraph: {
+    type: "website",
+    locale: "tr_TR",
+    url: SITE_URL,
+    siteName: "Donanım Portalı",
+    title: "Donanım Portalı",
+    description:
+      "Güncel donanım haberleri, PC toplama araçları ve sistem analiz rehberleri.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Donanım Portalı",
+    description:
+      "Güncel donanım haberleri, PC toplama araçları ve sistem analiz rehberleri.",
+  },
+};
 
 const quickTools = [
   {
@@ -102,15 +130,9 @@ const hardwareLists = [
 export default function HomePage() {
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-8">
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-        {/* SOL SÜTUN */}
         <div className="lg:col-span-8 flex flex-col gap-8">
-
-          {/* ANA BANNER */}
           <div className="p-10 border border-zinc-800/80 rounded-3xl bg-zinc-900/40 flex flex-col items-start gap-4 shadow-sm">
-
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/50 border border-cyan-900/50 text-cyan-400 text-[10px] font-extrabold uppercase tracking-widest">
               <Sparkles size={12} />
               YENİ NESİL TEKNOLOJİ ÜSSÜ
@@ -125,28 +147,19 @@ export default function HomePage() {
               vermeyi hızlandıran gelişmiş hesap makineleri ile gürültüden
               arındırılmış teknoloji rehberi.
             </p>
-
           </div>
 
-          {/* SUPABASE HABERLER */}
           <HomeNews />
-
         </div>
 
-        {/* SAĞ SÜTUN */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-
-          {/* HIZLI ARAÇLAR */}
           <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-3xl p-5 flex flex-col gap-3 shadow-sm">
-
             <h2 className="text-[11px] font-bold text-zinc-400 tracking-wider uppercase px-2 mb-1">
               HIZLI ARAÇLAR
             </h2>
 
             <div className="flex flex-col gap-1">
-
               {quickTools.map((tool) => {
-
                 const Icon = tool.icon;
 
                 return (
@@ -159,10 +172,7 @@ export default function HomePage() {
                         : "text-zinc-300 hover:text-white hover:bg-zinc-800/40 border border-transparent"
                     }`}
                   >
-
-                    <span>
-                      {tool.title}
-                    </span>
+                    <span>{tool.title}</span>
 
                     <Icon
                       size={16}
@@ -172,27 +182,19 @@ export default function HomePage() {
                           : "text-zinc-500"
                       }
                     />
-
                   </Link>
                 );
-
               })}
-
             </div>
-
           </div>
 
-          {/* DONANIM LİSTELERİ */}
           <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-3xl p-5 flex flex-col gap-3 shadow-sm">
-
             <h2 className="text-[11px] font-bold text-zinc-400 tracking-wider uppercase px-2 mb-1">
               DONANIM LİSTELERİ
             </h2>
 
             <div className="flex flex-col gap-1">
-
               {hardwareLists.map((hw) => {
-
                 const Icon = hw.icon;
 
                 return (
@@ -201,9 +203,7 @@ export default function HomePage() {
                     href={hw.href}
                     className="flex items-center px-4 py-3.5 rounded-2xl hover:bg-zinc-800/40 transition-all group border border-transparent"
                   >
-
                     <div className="flex items-center gap-3.5">
-
                       <Icon
                         size={16}
                         className="text-zinc-500 group-hover:text-zinc-300 transition-colors"
@@ -212,22 +212,14 @@ export default function HomePage() {
                       <span className="text-[13px] font-semibold text-zinc-300 group-hover:text-white transition-colors">
                         {hw.title}
                       </span>
-
                     </div>
-
                   </Link>
                 );
-
               })}
-
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

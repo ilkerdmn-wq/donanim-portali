@@ -139,34 +139,65 @@ export async function generateMetadata({
     guide.seo_description ||
     guide.excerpt;
 
+  const canonical =
+    `${SITE_URL}/rehber/${encodeURIComponent(
+      guide.slug
+    )}`;
+
   return {
     title,
     description,
+
     alternates: {
-      canonical:
-        `/rehber/${guide.slug}`,
+      canonical,
     },
+
     openGraph: {
+      type:
+        "article",
+
+      locale:
+        "tr_TR",
+
+      url:
+        canonical,
+
+      siteName:
+        "Donanım Portalı",
+
       title,
       description,
-      url:
-        `/rehber/${guide.slug}`,
-      type: "article",
+
+      publishedTime:
+        guide.created_at ||
+        undefined,
+
+      modifiedTime:
+        guide.updated_at ||
+        guide.created_at ||
+        undefined,
+
       images:
         guide.cover_image_url
           ? [
               {
                 url:
                   guide.cover_image_url,
+
+                alt:
+                  guide.title,
               },
             ]
           : undefined,
     },
+
     twitter: {
       card:
         "summary_large_image",
+
       title,
       description,
+
       images:
         guide.cover_image_url
           ? [
@@ -659,33 +690,64 @@ export default async function GuideDetailPage({
   const pageUrl =
     `${SITE_URL}/rehber/${guide.slug}`;
 
+  const articleDescription =
+    guide.seo_description ||
+    guide.excerpt;
+
   const articleJsonLd = {
     "@context":
       "https://schema.org",
+
     "@type":
       "Article",
+
     headline:
       guide.title,
+
     description:
-      guide.excerpt,
+      articleDescription,
+
     mainEntityOfPage:
       pageUrl,
+
     datePublished:
       guide.created_at,
+
     dateModified:
       guide.updated_at ||
       guide.created_at,
-    publisher: {
+
+    inLanguage:
+      "tr-TR",
+
+    author: {
       "@type":
         "Organization",
+
       name:
         "Donanım Portalı",
+
       url:
         SITE_URL,
     },
+
+    publisher: {
+      "@type":
+        "Organization",
+
+      name:
+        "Donanım Portalı",
+
+      url:
+        SITE_URL,
+    },
+
     image:
-      guide.cover_image_url ||
-      undefined,
+      guide.cover_image_url
+        ? [
+            guide.cover_image_url,
+          ]
+        : undefined,
   };
 
   return (

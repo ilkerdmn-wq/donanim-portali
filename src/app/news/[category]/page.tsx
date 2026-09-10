@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import {
+  notFound,
+} from "next/navigation";
+
 import NewsCategoryClient from "./NewsCategoryClient";
 
 type PageProps = {
@@ -54,16 +58,23 @@ const categorySeo: Record<
   },
 };
 
-function normalizeCategory(value: string) {
-  return decodeURIComponent(value || "")
-    .toLocaleLowerCase("tr-TR")
+function normalizeCategory(
+  value: string
+) {
+  return decodeURIComponent(
+    value || ""
+  )
+    .toLocaleLowerCase(
+      "tr-TR"
+    )
     .trim();
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const resolvedParams = await params;
+  const resolvedParams =
+    await params;
 
   const category =
     normalizeCategory(
@@ -75,9 +86,12 @@ export async function generateMetadata({
 
   if (!seo) {
     return {
-      title: "Haber kategorisi bulunamadı",
+      title:
+        "Haber kategorisi bulunamadı",
+
       description:
         "Aradığınız haber kategorisi bulunamadı.",
+
       robots: {
         index: false,
         follow: false,
@@ -89,26 +103,43 @@ export async function generateMetadata({
     `${SITE_URL}/news/${category}`;
 
   return {
-    title: seo.title,
-    description: seo.description,
+    title:
+      seo.title,
+
+    description:
+      seo.description,
 
     alternates: {
       canonical,
     },
 
     openGraph: {
-      type: "website",
-      locale: "tr_TR",
-      url: canonical,
-      siteName: "Donanım Portalı",
-      title: seo.title,
+      type:
+        "website",
+
+      locale:
+        "tr_TR",
+
+      url:
+        canonical,
+
+      siteName:
+        "Donanım Portalı",
+
+      title:
+        seo.title,
+
       description:
         seo.description,
     },
 
     twitter: {
-      card: "summary_large_image",
-      title: seo.title,
+      card:
+        "summary_large_image",
+
+      title:
+        seo.title,
+
       description:
         seo.description,
     },
@@ -118,16 +149,25 @@ export async function generateMetadata({
 export default async function NewsCategoryPage({
   params,
 }: PageProps) {
-  const resolvedParams = await params;
+  const resolvedParams =
+    await params;
 
   const category =
     normalizeCategory(
       resolvedParams.category
     );
 
+  if (
+    !categorySeo[category]
+  ) {
+    notFound();
+  }
+
   return (
     <NewsCategoryClient
-      categorySlug={category}
+      categorySlug={
+        category
+      }
     />
   );
 }

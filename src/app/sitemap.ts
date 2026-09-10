@@ -15,7 +15,9 @@ type GuideRow = {
 const SITE_URL =
   "https://donanim-portali.vercel.app";
 
-function categoryToSlug(category: string) {
+function categoryToSlug(
+  category: string
+) {
   return category
     .toLocaleLowerCase("tr-TR")
     .replace(/ç/g, "c")
@@ -28,14 +30,21 @@ function categoryToSlug(category: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-async function getPublishedNews(): Promise<NewsRow[]> {
+async function getPublishedNews(): Promise<
+  NewsRow[]
+> {
   const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL;
+    process.env
+      .NEXT_PUBLIC_SUPABASE_URL;
 
   const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    process.env
+      .NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !anonKey) {
+  if (
+    !supabaseUrl ||
+    !anonKey
+  ) {
     return [];
   }
 
@@ -59,21 +68,28 @@ async function getPublishedNews(): Promise<NewsRow[]> {
   );
 
   try {
-    const response = await fetch(
-      url.toString(),
-      {
-        headers: {
-          apikey: anonKey,
-          Authorization:
-            `Bearer ${anonKey}`,
-        },
-        next: {
-          revalidate: 300,
-        },
-      }
-    );
+    const response =
+      await fetch(
+        url.toString(),
+        {
+          headers: {
+            apikey:
+              anonKey,
 
-    if (!response.ok) {
+            Authorization:
+              `Bearer ${anonKey}`,
+          },
+
+          next: {
+            revalidate:
+              300,
+          },
+        }
+      );
+
+    if (
+      !response.ok
+    ) {
       console.error(
         "Sitemap haberleri alınamadı:",
         response.status,
@@ -86,7 +102,9 @@ async function getPublishedNews(): Promise<NewsRow[]> {
     return (
       (await response.json()) as NewsRow[]
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Sitemap haber hatası:",
       error
@@ -96,14 +114,21 @@ async function getPublishedNews(): Promise<NewsRow[]> {
   }
 }
 
-async function getPublishedGuides(): Promise<GuideRow[]> {
+async function getPublishedGuides(): Promise<
+  GuideRow[]
+> {
   const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL;
+    process.env
+      .NEXT_PUBLIC_SUPABASE_URL;
 
   const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    process.env
+      .NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !anonKey) {
+  if (
+    !supabaseUrl ||
+    !anonKey
+  ) {
     return [];
   }
 
@@ -127,21 +152,28 @@ async function getPublishedGuides(): Promise<GuideRow[]> {
   );
 
   try {
-    const response = await fetch(
-      url.toString(),
-      {
-        headers: {
-          apikey: anonKey,
-          Authorization:
-            `Bearer ${anonKey}`,
-        },
-        next: {
-          revalidate: 300,
-        },
-      }
-    );
+    const response =
+      await fetch(
+        url.toString(),
+        {
+          headers: {
+            apikey:
+              anonKey,
 
-    if (!response.ok) {
+            Authorization:
+              `Bearer ${anonKey}`,
+          },
+
+          next: {
+            revalidate:
+              300,
+          },
+        }
+      );
+
+    if (
+      !response.ok
+    ) {
       console.error(
         "Sitemap rehberleri alınamadı:",
         response.status,
@@ -154,7 +186,9 @@ async function getPublishedGuides(): Promise<GuideRow[]> {
     return (
       (await response.json()) as GuideRow[]
     );
-  } catch (error) {
+  } catch (
+    error
+  ) {
     console.error(
       "Sitemap rehber hatası:",
       error
@@ -164,127 +198,227 @@ async function getPublishedGuides(): Promise<GuideRow[]> {
   }
 }
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: SITE_URL,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1,
-    },
+export default async function sitemap(): Promise<
+  MetadataRoute.Sitemap
+> {
+  const staticPages:
+    MetadataRoute.Sitemap = [
+      {
+        url:
+          SITE_URL,
+        changeFrequency:
+          "daily",
+        priority: 1,
+      },
 
-    {
-      url: `${SITE_URL}/news`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
+      {
+        url:
+          `${SITE_URL}/news`,
+        changeFrequency:
+          "daily",
+        priority: 0.9,
+      },
 
-    {
-      url: `${SITE_URL}/donanim`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
+      {
+        url:
+          `${SITE_URL}/news/genel`,
+        changeFrequency:
+          "daily",
+        priority: 0.75,
+      },
 
-    {
-      url: `${SITE_URL}/araclar`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
+      {
+        url:
+          `${SITE_URL}/news/donanim`,
+        changeFrequency:
+          "daily",
+        priority: 0.8,
+      },
 
-    {
-      url: `${SITE_URL}/araclar/pc-oneri`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
+      {
+        url:
+          `${SITE_URL}/news/yazilim`,
+        changeFrequency:
+          "daily",
+        priority: 0.75,
+      },
 
-    {
-      url: `${SITE_URL}/araclar/toplama`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
+      {
+        url:
+          `${SITE_URL}/news/oyun`,
+        changeFrequency:
+          "daily",
+        priority: 0.75,
+      },
 
-    {
-      url: `${SITE_URL}/araclar/fps`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
+      {
+        url:
+          `${SITE_URL}/news/yapay-zeka`,
+        changeFrequency:
+          "daily",
+        priority: 0.75,
+      },
 
-    {
-      url: `${SITE_URL}/araclar/darbogaz`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
+      {
+        url:
+          `${SITE_URL}/news/mobil`,
+        changeFrequency:
+          "daily",
+        priority: 0.75,
+      },
 
-    {
-      url: `${SITE_URL}/araclar/psu`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
+      {
+        url:
+          `${SITE_URL}/rehber`,
+        changeFrequency:
+          "weekly",
+        priority: 0.85,
+      },
 
-    {
-      url: `${SITE_URL}/iletisim`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
+      {
+        url:
+          `${SITE_URL}/donanim`,
+        changeFrequency:
+          "daily",
+        priority: 0.9,
+      },
 
-    {
-      url: `${SITE_URL}/rehber`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
+      {
+        url:
+          `${SITE_URL}/donanim/islemciler`,
+        changeFrequency:
+          "daily",
+        priority: 0.8,
+      },
 
-    {
-      url: `${SITE_URL}/donanim/islemciler`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
+      {
+        url:
+          `${SITE_URL}/donanim/ekran-kartlari`,
+        changeFrequency:
+          "daily",
+        priority: 0.8,
+      },
 
-    {
-      url: `${SITE_URL}/donanim/ekran-kartlari`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
+      {
+        url:
+          `${SITE_URL}/donanim/anakartlar`,
+        changeFrequency:
+          "daily",
+        priority: 0.8,
+      },
 
-    {
-      url: `${SITE_URL}/donanim/anakartlar`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
+      {
+        url:
+          `${SITE_URL}/donanim/bellekler`,
+        changeFrequency:
+          "daily",
+        priority: 0.8,
+      },
 
-    {
-      url: `${SITE_URL}/donanim/bellekler`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
+      {
+        url:
+          `${SITE_URL}/donanim/guc-kaynaklari`,
+        changeFrequency:
+          "daily",
+        priority: 0.8,
+      },
 
-    {
-      url: `${SITE_URL}/donanim/guc-kaynaklari`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
+      {
+        url:
+          `${SITE_URL}/donanim/depolama`,
+        changeFrequency:
+          "daily",
+        priority: 0.8,
+      },
 
-    {
-      url: `${SITE_URL}/donanim/depolama`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-  ];
+      {
+        url:
+          `${SITE_URL}/araclar`,
+        changeFrequency:
+          "weekly",
+        priority: 0.8,
+      },
+
+      {
+        url:
+          `${SITE_URL}/araclar/pc-oneri`,
+        changeFrequency:
+          "weekly",
+        priority: 0.8,
+      },
+
+      {
+        url:
+          `${SITE_URL}/araclar/toplama`,
+        changeFrequency:
+          "weekly",
+        priority: 0.8,
+      },
+
+      {
+        url:
+          `${SITE_URL}/araclar/fps`,
+        changeFrequency:
+          "weekly",
+        priority: 0.8,
+      },
+
+      {
+        url:
+          `${SITE_URL}/araclar/darbogaz`,
+        changeFrequency:
+          "weekly",
+        priority: 0.8,
+      },
+
+      {
+        url:
+          `${SITE_URL}/araclar/psu`,
+        changeFrequency:
+          "weekly",
+        priority: 0.8,
+      },
+
+      {
+        url:
+          `${SITE_URL}/araclar/steam`,
+        changeFrequency:
+          "monthly",
+        priority: 0.65,
+      },
+
+      {
+        url:
+          `${SITE_URL}/araclar/birim`,
+        changeFrequency:
+          "monthly",
+        priority: 0.65,
+      },
+
+      {
+        url:
+          `${SITE_URL}/araclar/resim`,
+        changeFrequency:
+          "monthly",
+        priority: 0.65,
+      },
+
+      {
+        url:
+          `${SITE_URL}/araclar/belge`,
+        changeFrequency:
+          "monthly",
+        priority: 0.65,
+      },
+
+      {
+        url:
+          `${SITE_URL}/iletisim`,
+        changeFrequency:
+          "monthly",
+        priority: 0.5,
+      },
+    ];
 
   const news =
     await getPublishedNews();
@@ -292,59 +426,73 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const guides =
     await getPublishedGuides();
 
-  const newsPages: MetadataRoute.Sitemap =
+  const newsPages:
+    MetadataRoute.Sitemap =
     news
       .filter(
         (item) =>
           item.slug &&
           item.category
       )
-      .map((item) => ({
-        url:
-          `${SITE_URL}/news/` +
-          `${categoryToSlug(
-            item.category!
-          )}/` +
-          `${encodeURIComponent(
-            item.slug
-          )}`,
+      .map(
+        (item) => ({
+          url:
+            `${SITE_URL}/news/` +
+            `${categoryToSlug(
+              item.category!
+            )}/` +
+            `${encodeURIComponent(
+              item.slug
+            )}`,
 
-        lastModified:
-          item.created_at
-            ? new Date(item.created_at)
-            : new Date(),
+          lastModified:
+            item.created_at
+              ? new Date(
+                  item.created_at
+                )
+              : undefined,
 
-        changeFrequency:
-          "weekly" as const,
+          changeFrequency:
+            "weekly" as const,
 
-        priority: 0.7,
-      }));
+          priority:
+            0.7,
+        })
+      );
 
-  const guidePages: MetadataRoute.Sitemap =
+  const guidePages:
+    MetadataRoute.Sitemap =
     guides
       .filter(
         (item) =>
           item.slug
       )
-      .map((item) => ({
-        url:
-          `${SITE_URL}/rehber/` +
-          `${encodeURIComponent(
-            item.slug
-          )}`,
+      .map(
+        (item) => ({
+          url:
+            `${SITE_URL}/rehber/` +
+            `${encodeURIComponent(
+              item.slug
+            )}`,
 
-        lastModified:
-          item.updated_at
-            ? new Date(item.updated_at)
-            : item.created_at
-            ? new Date(item.created_at)
-            : new Date(),
+          lastModified:
+            item.updated_at
+              ? new Date(
+                  item.updated_at
+                )
+              : item.created_at
+              ? new Date(
+                  item.created_at
+                )
+              : undefined,
 
-        changeFrequency:
-          "monthly" as const,
+          changeFrequency:
+            "monthly" as const,
 
-        priority: 0.8,
-      }));
+          priority:
+            0.8,
+        })
+      );
 
   return [
     ...staticPages,
