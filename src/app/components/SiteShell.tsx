@@ -19,6 +19,7 @@ import {
   Layers,
   Mail,
   BookOpen,
+  Search,
   Construction,
   LogOut,
   LayoutDashboard,
@@ -218,6 +219,11 @@ function PortalShell({
       href: "/rehber",
       label: "Rehber",
       icon: BookOpen,
+    },
+    {
+      href: "/arama",
+      label: "Ara",
+      icon: Search,
     },
     {
       href: "/iletisim",
