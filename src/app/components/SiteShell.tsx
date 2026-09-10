@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -16,11 +17,12 @@ import {
   Sparkles,
   Wrench,
   Layers,
-  ShieldCheck,
   Construction,
   LogOut,
   LayoutDashboard,
   Loader2,
+  Menu,
+  X,
 } from "lucide-react";
 
 import {
@@ -48,6 +50,13 @@ function PortalShell({
 
   const [loggingOut, setLoggingOut] =
     useState(false);
+
+  const [mobileMenuOpen, setMobileMenuOpen] =
+    useState(false);
+
+  const adminTapCountRef = useRef(0);
+  const adminTapTimerRef =
+    useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isManagement =
     pathname.startsWith("/yonetim");
@@ -78,10 +87,47 @@ function PortalShell({
 
   useEffect(() => {
     checkAdminSession();
+    setMobileMenuOpen(false);
   }, [
     pathname,
     checkAdminSession,
   ]);
+
+  useEffect(() => {
+    return () => {
+      if (adminTapTimerRef.current) {
+        clearTimeout(
+          adminTapTimerRef.current
+        );
+      }
+    };
+  }, []);
+
+  const handleSecretAdminTap = () => {
+    adminTapCountRef.current += 1;
+
+    if (adminTapTimerRef.current) {
+      clearTimeout(
+        adminTapTimerRef.current
+      );
+    }
+
+    if (adminTapCountRef.current >= 5) {
+      adminTapCountRef.current = 0;
+
+      window.location.href =
+        isAdminAuthenticated
+          ? "/yonetim"
+          : "/yonetim/giris";
+
+      return;
+    }
+
+    adminTapTimerRef.current =
+      setTimeout(() => {
+        adminTapCountRef.current = 0;
+      }, 2500);
+  };
 
   const handleLogout = async () => {
     if (loggingOut) {
@@ -99,7 +145,6 @@ function PortalShell({
       );
     } catch {
       // Cookie sunucu tarafında siliniyor.
-      // Hata olsa bile kullanıcıyı giriş ekranına gönderiyoruz.
     } finally {
       setIsAdminAuthenticated(false);
       setLoggingOut(false);
@@ -116,12 +161,17 @@ function PortalShell({
     return (
       <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center px-6">
         <div className="max-w-xl w-full rounded-3xl border border-amber-500/20 bg-zinc-900/70 p-8 text-center">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+          <button
+            type="button"
+            onClick={handleSecretAdminTap}
+            className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center"
+            aria-label="Site durumu"
+          >
             <Construction
               size={26}
               className="text-amber-400"
             />
-          </div>
+          </button>
 
           <h1 className="text-3xl font-black mt-5">
             Bakım Modu
@@ -131,143 +181,223 @@ function PortalShell({
             {settings.siteName} şu anda kısa süreli bakımda.
             Lütfen daha sonra tekrar kontrol edin.
           </p>
-
-          <Link
-            href="/yonetim"
-            className="inline-flex items-center gap-2 mt-6 px-4 py-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs font-bold text-zinc-300 hover:text-white"
-          >
-            <ShieldCheck
-              size={14}
-              className="text-cyan-400"
-            />
-            Yönetim Paneli
-          </Link>
         </div>
       </div>
     );
   }
 
+  const publicLinks = [
+    {
+      href: "/",
+      label: "Ana Sayfa",
+      icon: Home,
+    },
+    {
+      href: "/news",
+      label: "Haberler",
+      icon: Newspaper,
+    },
+    {
+      href: "/araclar/pc-oneri",
+      label: "Sistem Önerisi",
+      icon: Sparkles,
+    },
+    {
+      href: "/araclar",
+      label: "Araçlar",
+      icon: Wrench,
+    },
+    {
+      href: "/donanim",
+      label: "Donanım",
+      icon: Layers,
+    },
+  ];
+
   return (
     <>
-      <header className="border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 group"
-          >
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-cyan-500 to-cyan-400 flex items-center justify-center text-zinc-950 shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
+      <header className="border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleSecretAdminTap}
+              className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-cyan-500 to-cyan-400 flex items-center justify-center text-zinc-950 shadow-lg shadow-cyan-500/20 hover:scale-105 transition-transform"
+              aria-label="Donanım Portalı"
+            >
               <Zap
                 size={20}
                 className="fill-zinc-950"
               />
-            </div>
+            </button>
 
-            <div className="flex flex-col">
-              <span className="text-sm font-extrabold tracking-wider text-white">
+            <Link
+              href="/"
+              className="flex flex-col min-w-0"
+            >
+              <span className="text-sm font-extrabold tracking-wider text-white truncate">
                 {settings.siteName.toLocaleUpperCase("tr-TR")}
               </span>
 
-              <span className="text-[9px] text-zinc-400 font-semibold tracking-widest uppercase">
+              <span className="text-[9px] text-zinc-400 font-semibold tracking-widest uppercase truncate">
                 {settings.siteSlogan}
               </span>
-            </div>
-          </Link>
+            </Link>
+          </div>
 
           <nav className="hidden md:flex items-center gap-1 bg-zinc-900/50 border border-zinc-800/80 px-3 py-1.5 rounded-2xl">
-            <Link
-              href="/"
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800/60 transition-all flex items-center gap-1.5"
-            >
-              <Home size={14} />
-              Ana Sayfa
-            </Link>
+            {publicLinks.map((item) => {
+              const Icon = item.icon;
+              const isDonanim =
+                item.href === "/donanim";
 
-            <Link
-              href="/news"
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800/60 transition-all flex items-center gap-1.5"
-            >
-              <Newspaper size={14} />
-              Haberler
-            </Link>
-
-            <Link
-              href="/araclar/pc-oneri"
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800/60 transition-all flex items-center gap-1.5"
-            >
-              <Sparkles size={14} />
-              Sistem Önerisi
-            </Link>
-
-            <Link
-              href="/araclar"
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800/60 transition-all flex items-center gap-1.5"
-            >
-              <Wrench size={14} />
-              Araçlar
-            </Link>
-
-            <Link
-              href="/donanim"
-              className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-cyan-400 bg-cyan-950/40 border border-cyan-900/50 transition-all flex items-center gap-1.5 shadow-sm"
-            >
-              <Layers size={14} />
-              Donanım
-            </Link>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={
+                    isDonanim
+                      ? "px-3.5 py-1.5 rounded-xl text-xs font-bold text-cyan-400 bg-cyan-950/40 border border-cyan-900/50 transition-all flex items-center gap-1.5 shadow-sm"
+                      : "px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800/60 transition-all flex items-center gap-1.5"
+                  }
+                >
+                  <Icon size={14} />
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-2">
-            {!authChecked ? (
-              <div className="px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-500">
-                <Loader2
-                  size={14}
-                  className="animate-spin"
-                />
-              </div>
-            ) : isAdminAuthenticated ? (
-              <>
-                <Link
-                  href="/yonetim"
-                  className="px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/15 border border-cyan-500/20 text-xs font-bold text-cyan-400 transition-all flex items-center gap-1.5 shadow-sm"
-                >
-                  <LayoutDashboard size={14} />
-                  Panel
-                </Link>
+            {isManagement &&
+              authChecked &&
+              isAdminAuthenticated && (
+                <div className="hidden md:flex items-center gap-2">
+                  <Link
+                    href="/yonetim"
+                    className="px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/15 border border-cyan-500/20 text-xs font-bold text-cyan-400 transition-all flex items-center gap-1.5 shadow-sm"
+                  >
+                    <LayoutDashboard size={14} />
+                    Panel
+                  </Link>
 
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  disabled={loggingOut}
-                  className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-red-500/10 border border-zinc-800 hover:border-red-500/20 text-xs font-bold text-zinc-400 hover:text-red-400 disabled:opacity-50 transition-all flex items-center gap-1.5 shadow-sm"
-                >
-                  {loggingOut ? (
-                    <Loader2
-                      size={14}
-                      className="animate-spin"
-                    />
-                  ) : (
-                    <LogOut size={14} />
-                  )}
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                    className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-red-500/10 border border-zinc-800 hover:border-red-500/20 text-xs font-bold text-zinc-400 hover:text-red-400 disabled:opacity-50 transition-all flex items-center gap-1.5 shadow-sm"
+                  >
+                    {loggingOut ? (
+                      <Loader2
+                        size={14}
+                        className="animate-spin"
+                      />
+                    ) : (
+                      <LogOut size={14} />
+                    )}
 
-                  <span className="hidden lg:inline">
                     Çıkış
-                  </span>
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/yonetim"
-                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm"
-              >
-                <ShieldCheck
-                  size={14}
-                  className="text-cyan-400"
-                />
-                Yönetim
-              </Link>
-            )}
+                  </button>
+                </div>
+              )}
+
+            <button
+              type="button"
+              onClick={() =>
+                setMobileMenuOpen(true)
+              }
+              className="md:hidden w-10 h-10 rounded-xl border border-zinc-800 bg-zinc-900/80 text-zinc-300 flex items-center justify-center hover:text-white hover:border-zinc-700 transition-colors"
+              aria-label="Menüyü aç"
+            >
+              <Menu size={20} />
+            </button>
           </div>
         </div>
       </header>
+
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-[100] md:hidden">
+          <button
+            type="button"
+            aria-label="Menüyü kapat"
+            onClick={() =>
+              setMobileMenuOpen(false)
+            }
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+          />
+
+          <aside className="absolute right-0 top-0 h-full w-[82%] max-w-[340px] bg-zinc-950 border-l border-zinc-800 shadow-2xl p-5">
+            <div className="flex items-center justify-between pb-5 border-b border-zinc-800">
+              <div>
+                <p className="text-[10px] font-black tracking-[0.18em] text-cyan-400 uppercase">
+                  MENÜ
+                </p>
+
+                <p className="text-sm font-extrabold text-white mt-1">
+                  {settings.siteName}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setMobileMenuOpen(false)
+                }
+                className="w-10 h-10 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 flex items-center justify-center"
+                aria-label="Menüyü kapat"
+              >
+                <X size={19} />
+              </button>
+            </div>
+
+            <nav className="flex flex-col gap-2 mt-5">
+              {publicLinks.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() =>
+                      setMobileMenuOpen(false)
+                    }
+                    className="flex items-center gap-3 px-4 py-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 text-sm font-bold text-zinc-300 hover:text-white hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all"
+                  >
+                    <Icon
+                      size={18}
+                      className="text-cyan-400"
+                    />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {isManagement &&
+              authChecked &&
+              isAdminAuthenticated && (
+                <div className="mt-6 pt-5 border-t border-zinc-800">
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl border border-red-500/20 bg-red-500/5 text-sm font-bold text-red-400"
+                  >
+                    {loggingOut ? (
+                      <Loader2
+                        size={16}
+                        className="animate-spin"
+                      />
+                    ) : (
+                      <LogOut size={16} />
+                    )}
+                    Çıkış
+                  </button>
+                </div>
+              )}
+          </aside>
+        </div>
+      )}
 
       {hydrated &&
         settings.showAnnouncement &&
