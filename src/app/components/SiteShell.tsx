@@ -1,7 +1,14 @@
 "use client";
 
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import {
   Zap,
   Home,
@@ -11,7 +18,9 @@ import {
   Layers,
   ShieldCheck,
   Construction,
-  X,
+  LogOut,
+  LayoutDashboard,
+  Loader2,
 } from "lucide-react";
 
 import {
@@ -24,18 +33,80 @@ function PortalShell({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname =
-    usePathname();
+  const pathname = usePathname();
 
   const {
     settings,
     hydrated,
   } = useSiteSettings();
 
+  const [isAdminAuthenticated, setIsAdminAuthenticated] =
+    useState(false);
+
+  const [authChecked, setAuthChecked] =
+    useState(false);
+
+  const [loggingOut, setLoggingOut] =
+    useState(false);
+
   const isManagement =
-    pathname.startsWith(
-      "/yonetim"
-    );
+    pathname.startsWith("/yonetim");
+
+  const checkAdminSession =
+    useCallback(async () => {
+      try {
+        const response = await fetch(
+          "/api/admin/session",
+          {
+            method: "GET",
+            cache: "no-store",
+          }
+        );
+
+        const result = await response.json();
+
+        setIsAdminAuthenticated(
+          response.ok &&
+            result.authenticated === true
+        );
+      } catch {
+        setIsAdminAuthenticated(false);
+      } finally {
+        setAuthChecked(true);
+      }
+    }, []);
+
+  useEffect(() => {
+    checkAdminSession();
+  }, [
+    pathname,
+    checkAdminSession,
+  ]);
+
+  const handleLogout = async () => {
+    if (loggingOut) {
+      return;
+    }
+
+    setLoggingOut(true);
+
+    try {
+      await fetch(
+        "/api/admin/logout",
+        {
+          method: "POST",
+        }
+      );
+    } catch {
+      // Cookie sunucu tarafında siliniyor.
+      // Hata olsa bile kullanıcıyı giriş ekranına gönderiyoruz.
+    } finally {
+      setIsAdminAuthenticated(false);
+      setLoggingOut(false);
+      window.location.href =
+        "/yonetim/giris";
+    }
+  };
 
   if (
     hydrated &&
@@ -144,17 +215,56 @@ function PortalShell({
             </Link>
           </nav>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/yonetim"
-              className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm"
-            >
-              <ShieldCheck
-                size={14}
-                className="text-cyan-400"
-              />
-              Yönetim
-            </Link>
+          <div className="flex items-center gap-2">
+            {!authChecked ? (
+              <div className="px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-500">
+                <Loader2
+                  size={14}
+                  className="animate-spin"
+                />
+              </div>
+            ) : isAdminAuthenticated ? (
+              <>
+                <Link
+                  href="/yonetim"
+                  className="px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/15 border border-cyan-500/20 text-xs font-bold text-cyan-400 transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  <LayoutDashboard size={14} />
+                  Panel
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-red-500/10 border border-zinc-800 hover:border-red-500/20 text-xs font-bold text-zinc-400 hover:text-red-400 disabled:opacity-50 transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  {loggingOut ? (
+                    <Loader2
+                      size={14}
+                      className="animate-spin"
+                    />
+                  ) : (
+                    <LogOut size={14} />
+                  )}
+
+                  <span className="hidden lg:inline">
+                    Çıkış
+                  </span>
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/yonetim"
+                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm"
+              >
+                <ShieldCheck
+                  size={14}
+                  className="text-cyan-400"
+                />
+                Yönetim
+              </Link>
+            )}
           </div>
         </div>
       </header>

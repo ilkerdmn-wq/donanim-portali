@@ -31,6 +31,9 @@ type GameProfile = {
   cpuWeight: number;
   mediumBase: number;
   ultraPenalty: number;
+  resolution1440p: number;
+  resolution4K: number;
+  fpsCap?: number;
 };
 
 type GameResult = {
@@ -42,73 +45,94 @@ type GameResult = {
 const popularGames: GameProfile[] = [
   {
     name: "Cyberpunk 2077",
-    gpuWeight: 0.82,
-    cpuWeight: 0.18,
+    gpuWeight: 0.88,
+    cpuWeight: 0.12,
     mediumBase: 92,
     ultraPenalty: 0.66,
+    resolution1440p: 0.74,
+    resolution4K: 0.43,
   },
   {
     name: "Black Myth: Wukong",
-    gpuWeight: 0.88,
-    cpuWeight: 0.12,
+    gpuWeight: 0.92,
+    cpuWeight: 0.08,
     mediumBase: 82,
     ultraPenalty: 0.62,
+    resolution1440p: 0.71,
+    resolution4K: 0.39,
   },
   {
     name: "Monster Hunter Wilds",
-    gpuWeight: 0.8,
-    cpuWeight: 0.2,
+    gpuWeight: 0.84,
+    cpuWeight: 0.16,
     mediumBase: 86,
     ultraPenalty: 0.66,
+    resolution1440p: 0.73,
+    resolution4K: 0.42,
   },
   {
     name: "Grand Theft Auto V",
-    gpuWeight: 0.55,
-    cpuWeight: 0.45,
+    gpuWeight: 0.48,
+    cpuWeight: 0.52,
     mediumBase: 150,
     ultraPenalty: 0.78,
+    resolution1440p: 0.82,
+    resolution4K: 0.61,
   },
   {
     name: "Counter-Strike 2",
-    gpuWeight: 0.35,
-    cpuWeight: 0.65,
+    gpuWeight: 0.28,
+    cpuWeight: 0.72,
     mediumBase: 260,
     ultraPenalty: 0.86,
+    resolution1440p: 0.9,
+    resolution4K: 0.76,
   },
   {
     name: "Valorant",
-    gpuWeight: 0.25,
-    cpuWeight: 0.75,
+    gpuWeight: 0.2,
+    cpuWeight: 0.8,
     mediumBase: 330,
     ultraPenalty: 0.9,
+    resolution1440p: 0.93,
+    resolution4K: 0.82,
   },
   {
     name: "Fortnite",
-    gpuWeight: 0.6,
-    cpuWeight: 0.4,
+    gpuWeight: 0.62,
+    cpuWeight: 0.38,
     mediumBase: 170,
     ultraPenalty: 0.74,
+    resolution1440p: 0.77,
+    resolution4K: 0.51,
   },
   {
     name: "Alan Wake 2",
-    gpuWeight: 0.9,
-    cpuWeight: 0.1,
+    gpuWeight: 0.94,
+    cpuWeight: 0.06,
     mediumBase: 76,
     ultraPenalty: 0.58,
+    resolution1440p: 0.7,
+    resolution4K: 0.37,
   },
   {
     name: "Elden Ring",
-    gpuWeight: 0.72,
-    cpuWeight: 0.28,
+    gpuWeight: 0.68,
+    cpuWeight: 0.32,
     mediumBase: 92,
     ultraPenalty: 0.74,
+    resolution1440p: 0.8,
+    resolution4K: 0.58,
+    fpsCap: 60,
   },
   {
     name: "Baldur's Gate 3",
-    gpuWeight: 0.58,
-    cpuWeight: 0.42,
+    gpuWeight: 0.52,
+    cpuWeight: 0.48,
     mediumBase: 130,
     ultraPenalty: 0.78,
+    resolution1440p: 0.84,
+    resolution4K: 0.64,
   },
   {
     name: "Call of Duty: Warzone",
@@ -116,34 +140,44 @@ const popularGames: GameProfile[] = [
     cpuWeight: 0.28,
     mediumBase: 145,
     ultraPenalty: 0.72,
+    resolution1440p: 0.75,
+    resolution4K: 0.47,
   },
   {
     name: "God of War Ragnarok",
-    gpuWeight: 0.8,
-    cpuWeight: 0.2,
+    gpuWeight: 0.82,
+    cpuWeight: 0.18,
     mediumBase: 110,
     ultraPenalty: 0.69,
+    resolution1440p: 0.73,
+    resolution4K: 0.42,
   },
   {
     name: "Forza Horizon 5",
-    gpuWeight: 0.72,
-    cpuWeight: 0.28,
+    gpuWeight: 0.68,
+    cpuWeight: 0.32,
     mediumBase: 160,
     ultraPenalty: 0.8,
+    resolution1440p: 0.79,
+    resolution4K: 0.55,
   },
   {
     name: "Marvel Rivals",
-    gpuWeight: 0.65,
-    cpuWeight: 0.35,
+    gpuWeight: 0.6,
+    cpuWeight: 0.4,
     mediumBase: 150,
     ultraPenalty: 0.74,
+    resolution1440p: 0.8,
+    resolution4K: 0.57,
   },
   {
     name: "Helldivers 2",
-    gpuWeight: 0.78,
-    cpuWeight: 0.22,
+    gpuWeight: 0.8,
+    cpuWeight: 0.2,
     mediumBase: 112,
     ultraPenalty: 0.72,
+    resolution1440p: 0.74,
+    resolution4K: 0.44,
   },
 ];
 
@@ -301,6 +335,14 @@ function cpuGenerationFactor(
     n.includes("PENTIUM")
   ) {
     return 0.48;
+  }
+
+  if (
+    n.includes("X3D")
+  ) {
+    if (/RYZEN\s+[3579]\s+9\d{3}/.test(n)) return 1.32;
+    if (/RYZEN\s+[3579]\s+7\d{3}/.test(n)) return 1.28;
+    if (/RYZEN\s+[3579]\s+5\d{3}/.test(n)) return 1.1;
   }
 
   if (
@@ -576,15 +618,16 @@ function gpuPerformanceScore(
   );
 }
 
-function resolutionMultiplier(
-  resolution: Resolution
+function gameResolutionMultiplier(
+  resolution: Resolution,
+  game: GameProfile
 ) {
   if (resolution === "1440p") {
-    return 0.72;
+    return game.resolution1440p;
   }
 
   if (resolution === "4K") {
-    return 0.43;
+    return game.resolution4K;
   }
 
   return 1;
@@ -606,8 +649,9 @@ function estimateGameFps(
     );
 
   const resFactor =
-    resolutionMultiplier(
-      resolution
+    gameResolutionMultiplier(
+      resolution,
+      game
     );
 
   const cpuContribution =
@@ -644,17 +688,30 @@ function estimateGameFps(
     medium *
     game.ultraPenalty;
 
-  return {
-    mediumFps:
+  const cap =
+    game.fpsCap ?? Infinity;
+
+  const mediumFps =
+    Math.min(
+      cap,
       Math.max(
         15,
         Math.round(medium)
-      ),
-    ultraFps:
+      )
+    );
+
+  const ultraFps =
+    Math.min(
+      cap,
       Math.max(
         10,
         Math.round(ultra)
-      ),
+      )
+    );
+
+  return {
+    mediumFps,
+    ultraFps,
   };
 }
 
@@ -1081,15 +1138,13 @@ export default function FpsHesaplayiciPage() {
               </div>
 
               <div className="p-3.5 rounded-xl border border-amber-500/20 bg-amber-500/5 text-[11px] leading-5 text-amber-200/80">
-                Bu araç
-                bilgilendirme ve
-                tahmini performans
-                karşılaştırması
-                amaçlıdır. Gerçek FPS;
-                oyun sürümü, grafik
-                ayarları, RAM, sürücü ve
-                sistem sıcaklıklarına
-                göre değişebilir.
+                Bu araç bilgilendirme ve tahmini performans
+                karşılaştırması amaçlıdır. Sonuçlar native çözünürlük
+                varsayımıyla hesaplanır; Ray Tracing, DLSS/FSR/XeSS ve
+                Frame Generation kapalı kabul edilir. Gerçek FPS; oyun
+                sürümü, RAM, sürücü, grafik ayarları ve sistem
+                sıcaklıklarına göre değişebilir. Elden Ring standart
+                60 FPS oyun limitiyle gösterilir.
               </div>
 
               <button
@@ -1159,6 +1214,10 @@ export default function FpsHesaplayiciPage() {
                           selectedGpu
                             ?.name
                         }
+                      </p>
+
+                      <p className="text-[10px] text-zinc-600 mt-1">
+                        Native çözünürlük • RT kapalı • Upscaling kapalı • Frame Generation kapalı
                       </p>
                     </div>
 

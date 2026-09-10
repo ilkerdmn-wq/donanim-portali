@@ -85,6 +85,19 @@ const categoryMap: Record<string, CategoryInfo> = {
   },
 };
 
+function categoryToSlug(category: string) {
+  return category
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ç/g, "c")
+    .replace(/ğ/g, "g")
+    .replace(/ı/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ş/g, "s")
+    .replace(/ü/g, "u")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function parseContent(content: any): ContentBlock[] {
   if (!content) return [];
 
@@ -243,12 +256,14 @@ export default function NewsDetailPage() {
 
   const categorySlug =
     typeof params.category === "string"
-      ? params.category
+      ? decodeURIComponent(params.category)
+          .toLocaleLowerCase("tr-TR")
+          .trim()
       : "";
 
   const newsSlug =
     typeof params.slug === "string"
-      ? params.slug
+      ? decodeURIComponent(params.slug).trim()
       : "";
 
   const categoryInfo = categoryMap[categorySlug];
@@ -281,7 +296,6 @@ export default function NewsDetailPage() {
       .from("news")
       .select("*")
       .eq("slug", newsSlug)
-      .eq("category", categoryInfo.dbName)
       .eq("published", true)
       .maybeSingle();
 
@@ -310,16 +324,16 @@ export default function NewsDetailPage() {
       AYNI KATEGORİDEN DİĞER HABERLER
     */
 
+    const actualCategory =
+      String(data.category || categoryInfo.dbName).trim();
+
     const { data: otherData, error: otherError } =
       await supabase
         .from("news")
         .select(
           "id,title,slug,excerpt,image_url,category,published,featured,created_at"
         )
-        .eq(
-          "category",
-          categoryInfo.dbName
-        )
+        .ilike("category", actualCategory)
         .eq("published", true)
         .neq("id", data.id)
         .limit(10);
@@ -434,13 +448,18 @@ export default function NewsDetailPage() {
   const CategoryIcon =
     categoryInfo.icon;
 
+  const actualCategorySlug =
+    categoryToSlug(
+      news.category || categoryInfo.dbName
+    );
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <article className="max-w-[950px] mx-auto px-5 md:px-6 py-10 md:py-14">
         {/* GERİ DÖN */}
 
         <Link
-          href={`/news/${categorySlug}`}
+          href={`/news/${actualCategorySlug}`}
           className="inline-flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-cyan-400 transition-colors mb-8"
         >
           <ArrowLeft size={14} />
@@ -540,7 +559,7 @@ export default function NewsDetailPage() {
               {otherNews.map((item) => (
                 <Link
                   key={item.id}
-                  href={`/news/${categorySlug}/${item.slug}`}
+                  href={`/news/${categoryToSlug(item.category)}/${item.slug}`}
                   className="group overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50 hover:border-cyan-500/30 transition-all"
                 >
                   <div className="aspect-[16/9] bg-zinc-900">
@@ -609,7 +628,7 @@ export default function NewsDetailPage() {
 
         <div className="border-t border-zinc-800 mt-10 pt-7">
           <Link
-            href={`/news/${categorySlug}`}
+            href={`/news/${actualCategorySlug}`}
             className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-xs font-black transition-all"
           >
             <ArrowLeft size={14} />

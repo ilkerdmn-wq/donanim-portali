@@ -17,6 +17,8 @@ import {
   EyeOff,
   Bell,
   Globe2,
+  Loader2,
+  AlertTriangle,
 } from "lucide-react";
 
 import {
@@ -31,7 +33,10 @@ export default function SiteSettingsPage() {
     updateSettings,
     resetSettings,
     hydrated,
-  } = useSiteSettings();
+    saving,
+    loadError,
+  } =
+    useSiteSettings();
 
   const [
     settings,
@@ -46,6 +51,12 @@ export default function SiteSettingsPage() {
     setSaved,
   ] =
     useState(false);
+
+  const [
+    saveError,
+    setSaveError,
+  ] =
+    useState("");
 
   useEffect(() => {
     if (hydrated) {
@@ -72,41 +83,73 @@ export default function SiteSettingsPage() {
     );
 
     setSaved(false);
+    setSaveError("");
   };
 
-  const handleSave = () => {
-    updateSettings(
-      settings
-    );
+  const handleSave =
+    async () => {
+      try {
+        setSaveError("");
 
-    setSaved(true);
+        await updateSettings(
+          settings
+        );
 
-    window.setTimeout(
-      () => {
-        setSaved(false);
-      },
-      2500
-    );
-  };
+        setSaved(true);
 
-  const handleReset = () => {
-    const confirmed =
-      window.confirm(
-        "Site ayarlarını varsayılan değerlere döndürmek istiyor musunuz?"
-      );
+        window.setTimeout(
+          () => {
+            setSaved(false);
+          },
+          2500
+        );
+      } catch (
+        error: any
+      ) {
+        setSaveError(
+          error?.message ||
+            "Ayarlar kaydedilemedi."
+        );
+      }
+    };
 
-    if (!confirmed) {
-      return;
-    }
+  const handleReset =
+    async () => {
+      const confirmed =
+        window.confirm(
+          "Site ayarlarını varsayılan değerlere döndürmek istiyor musunuz?"
+        );
 
-    resetSettings();
+      if (!confirmed) {
+        return;
+      }
 
-    setSettings(
-      defaultSiteSettings
-    );
+      try {
+        setSaveError("");
 
-    setSaved(false);
-  };
+        await resetSettings();
+
+        setSettings(
+          defaultSiteSettings
+        );
+
+        setSaved(true);
+
+        window.setTimeout(
+          () => {
+            setSaved(false);
+          },
+          2500
+        );
+      } catch (
+        error: any
+      ) {
+        setSaveError(
+          error?.message ||
+            "Varsayılan ayarlar uygulanamadı."
+        );
+      }
+    };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -140,8 +183,8 @@ export default function SiteSettingsPage() {
               </h1>
 
               <p className="text-sm text-zinc-500 mt-2">
-                Kaydettiğiniz genel ayarlar artık
-                portal üzerinde anlık uygulanır.
+                Ayarlar artık Supabase üzerinde
+                merkezi olarak saklanır.
               </p>
             </div>
           </div>
@@ -150,233 +193,266 @@ export default function SiteSettingsPage() {
             <ShieldCheck
               size={14}
             />
-            Aktif
+            Merkezi ayarlar
           </div>
         </div>
 
-        {saved && (
-          <div className="mb-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-300">
-            Site ayarları kaydedildi ve aktif edildi.
+        {(loadError ||
+          saveError) && (
+          <div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/5 px-4 py-3 flex items-center gap-3">
+            <AlertTriangle
+              size={16}
+              className="text-red-400"
+            />
+
+            <p className="text-xs text-red-300">
+              {saveError ||
+                loadError}
+            </p>
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-5">
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <Globe2
-                size={17}
-                className="text-cyan-400"
-              />
-
-              <h2 className="text-base font-black">
-                Genel Bilgiler
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-zinc-400">
-                  Site Adı
-                </label>
-
-                <input
-                  value={
-                    settings.siteName
-                  }
-                  onChange={(
-                    e
-                  ) =>
-                    updateSetting(
-                      "siteName",
-                      e.target.value
-                    )
-                  }
-                  className="h-11 px-4 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none focus:border-cyan-500/50"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-zinc-400">
-                  Site Sloganı
-                </label>
-
-                <input
-                  value={
-                    settings.siteSlogan
-                  }
-                  onChange={(
-                    e
-                  ) =>
-                    updateSetting(
-                      "siteSlogan",
-                      e.target.value
-                    )
-                  }
-                  className="h-11 px-4 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none focus:border-cyan-500/50"
-                />
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <Bell
-                size={17}
-                className="text-cyan-400"
-              />
-
-              <h2 className="text-base font-black">
-                Duyuru
-              </h2>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <textarea
-                value={
-                  settings.announcement
-                }
-                onChange={(
-                  e
-                ) =>
-                  updateSetting(
-                    "announcement",
-                    e.target.value
-                  )
-                }
-                rows={4}
-                placeholder="Portalda gösterilecek duyuruyu yazın..."
-                className="p-4 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none resize-none focus:border-cyan-500/50"
-              />
-
-              <SettingToggle
-                title="Duyuruyu Göster"
-                description="Aktif olduğunda duyuru üst menünün altında gösterilir."
-                checked={
-                  settings.showAnnouncement
-                }
-                onChange={(
-                  value
-                ) =>
-                  updateSetting(
-                    "showAnnouncement",
-                    value
-                  )
-                }
-              />
-            </div>
-          </section>
-
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <Eye
-                size={17}
-                className="text-cyan-400"
-              />
-
-              <h2 className="text-base font-black">
-                Görünüm ve Veri
-              </h2>
-            </div>
-
-            <div className="flex flex-col divide-y divide-zinc-800">
-              <SettingToggle
-                title="Ürün Fiyatlarını Göster"
-                description="Donanım sayfalarında fiyatların gösterilip gösterilmeyeceğini belirler."
-                checked={
-                  settings.showPrices
-                }
-                onChange={(
-                  value
-                ) =>
-                  updateSetting(
-                    "showPrices",
-                    value
-                  )
-                }
-              />
-
-              <SettingToggle
-                title="Fiyat Kaynağını Göster"
-                description="Ürünlerde fiyat kaynağının gösterilip gösterilmeyeceğini belirler."
-                checked={
-                  settings.showPriceSource
-                }
-                onChange={(
-                  value
-                ) =>
-                  updateSetting(
-                    "showPriceSource",
-                    value
-                  )
-                }
-              />
-            </div>
-          </section>
-
-          <section className="rounded-3xl border border-red-500/20 bg-red-500/[0.03] p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <EyeOff
-                size={17}
-                className="text-red-400"
-              />
-
-              <h2 className="text-base font-black">
-                Sistem Durumu
-              </h2>
-            </div>
-
-            <SettingToggle
-              title="Bakım Modu"
-              description="Aktif olduğunda ziyaretçiler bakım ekranını görür; yönetim paneli açık kalır."
-              checked={
-                settings.maintenanceMode
-              }
-              danger
-              onChange={(
-                value
-              ) =>
-                updateSetting(
-                  "maintenanceMode",
-                  value
-                )
-              }
-            />
-          </section>
-
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
-            <button
-              onClick={
-                handleReset
-              }
-              className="h-11 px-5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all text-sm font-bold flex items-center justify-center gap-2"
-            >
-              <RotateCcw
-                size={15}
-              />
-              Varsayılanlara Dön
-            </button>
-
-            <button
-              onClick={
-                handleSave
-              }
-              className="h-11 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-zinc-950 transition-all text-sm font-black flex items-center justify-center gap-2"
-            >
-              <Save
-                size={15}
-              />
-              Ayarları Kaydet
-            </button>
+        {saved && (
+          <div className="mb-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-300">
+            Site ayarları Supabase'e kaydedildi ve aktif edildi.
           </div>
-        </div>
+        )}
 
-        <div className="mt-6 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4 text-[11px] leading-5 text-cyan-100/80">
-          Site adı, slogan, duyuru ve bakım modu
-          artık doğrudan çalışır. Fiyat gösterme ve
-          fiyat kaynağı seçeneklerini de donanım
-          kartlarına bağlamak için donanım kategori
-          sayfası bu ortak ayarları okuyabilir.
-        </div>
+        {!hydrated ? (
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-10 flex items-center justify-center gap-3 text-zinc-400">
+            <Loader2
+              size={18}
+              className="animate-spin text-cyan-400"
+            />
+            Site ayarları yükleniyor...
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5">
+            <section className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <Globe2
+                  size={17}
+                  className="text-cyan-400"
+                />
+
+                <h2 className="text-base font-black">
+                  Genel Bilgiler
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-zinc-400">
+                    Site Adı
+                  </label>
+
+                  <input
+                    value={
+                      settings.siteName
+                    }
+                    onChange={(
+                      e
+                    ) =>
+                      updateSetting(
+                        "siteName",
+                        e.target.value
+                      )
+                    }
+                    className="h-11 px-4 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none focus:border-cyan-500/50"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-zinc-400">
+                    Site Sloganı
+                  </label>
+
+                  <input
+                    value={
+                      settings.siteSlogan
+                    }
+                    onChange={(
+                      e
+                    ) =>
+                      updateSetting(
+                        "siteSlogan",
+                        e.target.value
+                      )
+                    }
+                    className="h-11 px-4 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none focus:border-cyan-500/50"
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <Bell
+                  size={17}
+                  className="text-cyan-400"
+                />
+
+                <h2 className="text-base font-black">
+                  Duyuru
+                </h2>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <textarea
+                  value={
+                    settings.announcement
+                  }
+                  onChange={(
+                    e
+                  ) =>
+                    updateSetting(
+                      "announcement",
+                      e.target.value
+                    )
+                  }
+                  rows={4}
+                  placeholder="Portalda gösterilecek duyuruyu yazın..."
+                  className="p-4 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none resize-none focus:border-cyan-500/50"
+                />
+
+                <SettingToggle
+                  title="Duyuruyu Göster"
+                  description="Aktif olduğunda duyuru üst menünün altında gösterilir."
+                  checked={
+                    settings.showAnnouncement
+                  }
+                  onChange={(
+                    value
+                  ) =>
+                    updateSetting(
+                      "showAnnouncement",
+                      value
+                    )
+                  }
+                />
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <Eye
+                  size={17}
+                  className="text-cyan-400"
+                />
+
+                <h2 className="text-base font-black">
+                  Görünüm ve Veri
+                </h2>
+              </div>
+
+              <div className="flex flex-col divide-y divide-zinc-800">
+                <SettingToggle
+                  title="Ürün Fiyatlarını Göster"
+                  description="Donanım sayfalarında fiyatların gösterilip gösterilmeyeceğini belirler."
+                  checked={
+                    settings.showPrices
+                  }
+                  onChange={(
+                    value
+                  ) =>
+                    updateSetting(
+                      "showPrices",
+                      value
+                    )
+                  }
+                />
+
+                <SettingToggle
+                  title="Fiyat Kaynağını Göster"
+                  description="Ürünlerde fiyat kaynağının gösterilip gösterilmeyeceğini belirler."
+                  checked={
+                    settings.showPriceSource
+                  }
+                  onChange={(
+                    value
+                  ) =>
+                    updateSetting(
+                      "showPriceSource",
+                      value
+                    )
+                  }
+                />
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-red-500/20 bg-red-500/[0.03] p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <EyeOff
+                  size={17}
+                  className="text-red-400"
+                />
+
+                <h2 className="text-base font-black">
+                  Sistem Durumu
+                </h2>
+              </div>
+
+              <SettingToggle
+                title="Bakım Modu"
+                description="Aktif olduğunda ziyaretçiler bakım ekranını görür; yönetim paneli açık kalır."
+                checked={
+                  settings.maintenanceMode
+                }
+                danger
+                onChange={(
+                  value
+                ) =>
+                  updateSetting(
+                    "maintenanceMode",
+                    value
+                  )
+                }
+              />
+            </section>
+
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+              <button
+                onClick={
+                  handleReset
+                }
+                disabled={
+                  saving
+                }
+                className="h-11 px-5 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 hover:text-white hover:border-zinc-700 disabled:opacity-50 transition-all text-sm font-bold flex items-center justify-center gap-2"
+              >
+                <RotateCcw
+                  size={15}
+                />
+                Varsayılanlara Dön
+              </button>
+
+              <button
+                onClick={
+                  handleSave
+                }
+                disabled={
+                  saving
+                }
+                className="h-11 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 disabled:opacity-50 text-zinc-950 transition-all text-sm font-black flex items-center justify-center gap-2"
+              >
+                {saving ? (
+                  <Loader2
+                    size={15}
+                    className="animate-spin"
+                  />
+                ) : (
+                  <Save
+                    size={15}
+                  />
+                )}
+
+                {saving
+                  ? "Kaydediliyor..."
+                  : "Ayarları Kaydet"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

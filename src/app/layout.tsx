@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+
 import {
   Geist,
   Geist_Mono,
@@ -7,6 +8,7 @@ import {
 import "./globals.css";
 
 import SiteShell from "./components/SiteShell";
+import ScrollToTop from "./components/ScrollToTop";
 
 const geistSans = Geist({
   variable:
@@ -41,6 +43,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-zinc-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-zinc-950`}
       >
         <SiteShell>
+          <ScrollToTop />
+
           {children}
         </SiteShell>
       </body>

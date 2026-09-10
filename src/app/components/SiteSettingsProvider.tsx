@@ -18,9 +18,6 @@ export type SiteSettings = {
   maintenanceMode: boolean;
 };
 
-export const SITE_SETTINGS_STORAGE_KEY =
-  "donanim_portali_site_settings";
-
 export const defaultSiteSettings: SiteSettings = {
   siteName: "Donanım Portalı",
   siteSlogan: "Haber • Araç • Keşif",
@@ -33,155 +30,174 @@ export const defaultSiteSettings: SiteSettings = {
 
 type SiteSettingsContextValue = {
   settings: SiteSettings;
-  updateSettings: (next: SiteSettings) => void;
-  resetSettings: () => void;
+  updateSettings: (
+    next: SiteSettings
+  ) => Promise<void>;
+  resetSettings: () => Promise<void>;
   hydrated: boolean;
+  saving: boolean;
+  loadError: string;
 };
 
 const SiteSettingsContext =
-  createContext<SiteSettingsContextValue | null>(null);
+  createContext<SiteSettingsContextValue | null>(
+    null
+  );
 
 export function SiteSettingsProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [settings, setSettings] =
-    useState<SiteSettings>(defaultSiteSettings);
-
-  const [hydrated, setHydrated] =
-    useState(false);
-
-  useEffect(() => {
-    try {
-      const stored =
-        window.localStorage.getItem(
-          SITE_SETTINGS_STORAGE_KEY
-        );
-
-      if (stored) {
-        const parsed =
-          JSON.parse(stored) as Partial<SiteSettings>;
-
-        setSettings({
-          ...defaultSiteSettings,
-          ...parsed,
-        });
-      }
-    } catch (error) {
-      console.error(
-        "Site ayarları okunamadı:",
-        error
-      );
-    } finally {
-      setHydrated(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    const onStorage = (
-      event: StorageEvent
-    ) => {
-      if (
-        event.key !==
-          SITE_SETTINGS_STORAGE_KEY ||
-        !event.newValue
-      ) {
-        return;
-      }
-
-      try {
-        const parsed =
-          JSON.parse(event.newValue) as Partial<SiteSettings>;
-
-        setSettings({
-          ...defaultSiteSettings,
-          ...parsed,
-        });
-      } catch {
-        // Geçersiz kayıt varsa mevcut ayarları koru.
-      }
-    };
-
-    window.addEventListener(
-      "storage",
-      onStorage
-    );
-
-    return () =>
-      window.removeEventListener(
-        "storage",
-        onStorage
-      );
-  }, []);
-
-  const updateSettings = (
-    next: SiteSettings
-  ) => {
-    setSettings(next);
-
-    window.localStorage.setItem(
-      SITE_SETTINGS_STORAGE_KEY,
-      JSON.stringify(next)
-    );
-
-    window.dispatchEvent(
-      new CustomEvent(
-        "donanim-portali-settings-changed",
-        {
-          detail: next,
-        }
-      )
-    );
-  };
-
-  const resetSettings = () => {
-    updateSettings(
+  const [
+    settings,
+    setSettings,
+  ] =
+    useState<SiteSettings>(
       defaultSiteSettings
     );
-  };
+
+  const [
+    hydrated,
+    setHydrated,
+  ] =
+    useState(false);
+
+  const [
+    saving,
+    setSaving,
+  ] =
+    useState(false);
+
+  const [
+    loadError,
+    setLoadError,
+  ] =
+    useState("");
 
   useEffect(() => {
-    const onCustomChange = (
-      event: Event
-    ) => {
-      const customEvent =
-        event as CustomEvent<SiteSettings>;
+    loadSettings();
+  }, []);
 
-      if (
-        customEvent.detail
-      ) {
+  const loadSettings =
+    async () => {
+      try {
+        setLoadError("");
+
+        const response =
+          await fetch(
+            "/api/site-settings",
+            {
+              method: "GET",
+              cache: "no-store",
+            }
+          );
+
+        const result =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !result.success
+        ) {
+          throw new Error(
+            result.error ||
+              "Site ayarları yüklenemedi."
+          );
+        }
+
         setSettings({
           ...defaultSiteSettings,
-          ...customEvent.detail,
+          ...result.settings,
         });
+      } catch (error: any) {
+        console.error(
+          "Site ayarları yükleme hatası:",
+          error
+        );
+
+        setLoadError(
+          error?.message ||
+            "Site ayarları yüklenemedi."
+        );
+
+        setSettings(
+          defaultSiteSettings
+        );
+      } finally {
+        setHydrated(true);
       }
     };
 
-    window.addEventListener(
-      "donanim-portali-settings-changed",
-      onCustomChange
-    );
+  const updateSettings =
+    async (
+      next: SiteSettings
+    ) => {
+      setSaving(true);
 
-    return () =>
-      window.removeEventListener(
-        "donanim-portali-settings-changed",
-        onCustomChange
+      try {
+        const response =
+          await fetch(
+            "/api/site-settings",
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body:
+                JSON.stringify(
+                  next
+                ),
+            }
+          );
+
+        const result =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !result.success
+        ) {
+          throw new Error(
+            result.error ||
+              "Site ayarları kaydedilemedi."
+          );
+        }
+
+        setSettings({
+          ...defaultSiteSettings,
+          ...result.settings,
+        });
+      } finally {
+        setSaving(false);
+      }
+    };
+
+  const resetSettings =
+    async () => {
+      await updateSettings(
+        defaultSiteSettings
       );
-  }, []);
+    };
 
-  const value = useMemo(
-    () => ({
-      settings,
-      updateSettings,
-      resetSettings,
-      hydrated,
-    }),
-    [
-      settings,
-      hydrated,
-    ]
-  );
+  const value =
+    useMemo(
+      () => ({
+        settings,
+        updateSettings,
+        resetSettings,
+        hydrated,
+        saving,
+        loadError,
+      }),
+      [
+        settings,
+        hydrated,
+        saving,
+        loadError,
+      ]
+    );
 
   return (
     <SiteSettingsContext.Provider

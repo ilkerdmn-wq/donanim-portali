@@ -60,6 +60,201 @@ function formatPrice(
   ).toLocaleString("tr-TR")} ₺`;
 }
 
+
+function normalizeText(value: string) {
+  return value
+    .toLocaleUpperCase("tr-TR")
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function fallbackGpuPower(
+  item: PricedHardwareItem
+) {
+  const n = normalizeText(item.name);
+
+  const rtx = n.match(
+    /RTX(\d{4})(TI|SUPER)?/
+  );
+
+  if (rtx) {
+    const model = Number(rtx[1]);
+    const variant = rtx[2] || "";
+
+    if (model >= 5090) return 575;
+    if (model >= 5080) return 360;
+    if (model >= 5070) return 250;
+    if (model >= 5060) {
+      return variant === "TI" ? 180 : 145;
+    }
+    if (model >= 4090) return 450;
+    if (model >= 4080) {
+      return variant === "SUPER" ? 320 : 320;
+    }
+    if (model >= 4070) {
+      if (variant === "TI") return 285;
+      if (variant === "SUPER") return 220;
+      return 200;
+    }
+    if (model >= 4060) {
+      return variant === "TI" ? 160 : 115;
+    }
+    if (model >= 3090) return 350;
+    if (model >= 3080) return 320;
+    if (model >= 3070) return 220;
+    if (model >= 3060) return 170;
+    if (model >= 3050) return 130;
+  }
+
+  const rx = n.match(
+    /RX(\d{4})(XT|XTX)?/
+  );
+
+  if (rx) {
+    const model = Number(rx[1]);
+    const variant = rx[2] || "";
+
+    if (model >= 9070) {
+      return variant === "XT" ? 304 : 220;
+    }
+    if (model >= 7900) {
+      return variant === "XTX" ? 355 : 315;
+    }
+    if (model >= 7800) return 263;
+    if (model >= 7700) return 245;
+    if (model >= 7600) return 165;
+    if (model >= 6950) return 335;
+    if (model >= 6900) return 300;
+    if (model >= 6800) return 250;
+    if (model >= 6750) return 250;
+    if (model >= 6700) return 230;
+    if (model >= 6650) return 180;
+    if (model >= 6600) return 132;
+  }
+
+  const arc = n.match(
+    /ARC[A-Z]?(\d{3})/
+  );
+
+  if (arc) {
+    const model = Number(arc[1]);
+
+    if (model >= 770) return 225;
+    if (model >= 750) return 225;
+    if (model >= 580) return 185;
+  }
+
+  return 200;
+}
+
+function fallbackCpuPower(
+  item: PricedHardwareItem
+) {
+  const n = item.name.toUpperCase();
+
+  if (n.includes("7800X3D")) return 120;
+  if (n.includes("9800X3D")) return 120;
+  if (n.includes("7950X3D")) return 120;
+  if (n.includes("9950X3D")) return 170;
+
+  const ryzen = n.match(
+    /RYZEN\s+[3579]\s+(\d{4})/
+  );
+
+  if (ryzen) {
+    const model = Number(ryzen[1]);
+
+    if (model >= 9950) return 170;
+    if (model >= 9900) return 120;
+    if (model >= 9700) return 65;
+    if (model >= 9600) return 65;
+    if (model >= 7950) return 170;
+    if (model >= 7900) return 120;
+    if (model >= 7800) return 120;
+    if (model >= 7700) return 65;
+    if (model >= 7600) return 65;
+    if (model >= 5950) return 105;
+    if (model >= 5900) return 105;
+    if (model >= 5800) return 105;
+    if (model >= 5700) return 65;
+    if (model >= 5600) return 65;
+    if (model >= 5500) return 65;
+  }
+
+  const intel = n.match(
+    /I[3579]-(\d{4,5})/
+  );
+
+  if (intel) {
+    const model = Number(intel[1]);
+
+    if (model >= 14900) return 253;
+    if (model >= 14700) return 253;
+    if (model >= 14600) return 181;
+    if (model >= 14500) return 154;
+    if (model >= 14400) return 148;
+    if (model >= 13900) return 253;
+    if (model >= 13700) return 253;
+    if (model >= 13600) return 181;
+    if (model >= 13500) return 154;
+    if (model >= 13400) return 148;
+    if (model >= 12900) return 241;
+    if (model >= 12700) return 180;
+    if (model >= 12600) return 150;
+    if (model >= 12400) return 117;
+  }
+
+  return 65;
+}
+
+function roundPsuStep(
+  value: number
+) {
+  const steps = [
+    450,
+    500,
+    550,
+    650,
+    750,
+    850,
+    1000,
+    1200,
+  ];
+
+  return (
+    steps.find(
+      (step) => step >= value
+    ) || 1200
+  );
+}
+
+function minimumPsuByGpuClass(
+  item: PricedHardwareItem
+) {
+  const n = normalizeText(item.name);
+
+  if (n.includes("RTX5090")) return 1000;
+  if (n.includes("RTX5080")) return 850;
+  if (n.includes("RTX5070")) return 750;
+  if (n.includes("RTX5060TI")) return 650;
+  if (n.includes("RTX5060")) return 600;
+  if (n.includes("RTX4090")) return 850;
+  if (n.includes("RTX4080")) return 850;
+  if (n.includes("RTX4070TI")) return 750;
+  if (n.includes("RTX4070")) return 650;
+  if (n.includes("RTX4060TI")) return 650;
+  if (n.includes("RTX4060")) return 550;
+  if (n.includes("RTX3050")) return 500;
+
+  if (n.includes("RX7900XTX")) return 850;
+  if (n.includes("RX7900")) return 750;
+  if (n.includes("RX7800")) return 750;
+  if (n.includes("RX7700")) return 700;
+  if (n.includes("RX7600")) return 600;
+
+  return 500;
+}
+
 export default function PsuHesaplayiciPage() {
   const [cpus, setCpus] =
     useState<PricedHardwareItem[]>([]);
@@ -186,67 +381,89 @@ export default function PsuHesaplayiciPage() {
       return;
     }
 
-    const cpuWatt =
+    const cpuSpecWatt =
       parseWatt(
         getSpec(selectedCpu, [
           "TDP",
           "tdp",
+          "Güç Tüketimi",
         ])
-      ) || 65;
+      );
 
-    const gpuPower =
+    const cpuWatt =
+      cpuSpecWatt > 0
+        ? Math.max(
+            cpuSpecWatt,
+            fallbackCpuPower(
+              selectedCpu
+            )
+          )
+        : fallbackCpuPower(
+            selectedCpu
+          );
+
+    const gpuSpecWatt =
       parseWatt(
         getSpec(selectedGpu, [
           "Güç Tüketimi",
           "TDP",
+          "TBP",
+          "TGP",
         ])
-      ) || 200;
+      );
+
+    const gpuPower =
+      gpuSpecWatt > 0
+        ? gpuSpecWatt
+        : fallbackGpuPower(
+            selectedGpu
+          );
 
     const gpuRecommendedPsu =
       parseWatt(
         getSpec(selectedGpu, [
           "Önerilen PSU",
           "önerilen psu",
+          "Önerilen Güç Kaynağı",
         ])
       );
 
-    const otherWatt =
-      50 +
-      ramCount * 5 +
-      storageCount * 8;
+    // Anakart + fanlar + USB aygıtları +
+    // RAM + depolama için temel sistem payı.
+    const baseSystemWatt = 55;
+
+    const ramWatt =
+      ramCount * 4;
+
+    const storageWatt =
+      storageCount * 7;
 
     const totalWatt =
       cpuWatt +
       gpuPower +
-      otherWatt;
+      baseSystemWatt +
+      ramWatt +
+      storageWatt;
 
-    const rawRecommended =
+    const safetyRecommended =
       totalWatt * 1.3;
 
-    let recommendedWatt = 500;
+    const modelMinimum =
+      minimumPsuByGpuClass(
+        selectedGpu
+      );
 
-    if (rawRecommended > 500)
-      recommendedWatt = 600;
-    if (rawRecommended > 600)
-      recommendedWatt = 650;
-    if (rawRecommended > 650)
-      recommendedWatt = 750;
-    if (rawRecommended > 750)
-      recommendedWatt = 850;
-    if (rawRecommended > 850)
-      recommendedWatt = 1000;
-    if (rawRecommended > 1000)
-      recommendedWatt = 1200;
+    const requiredWatt =
+      Math.max(
+        safetyRecommended,
+        gpuRecommendedPsu,
+        modelMinimum
+      );
 
-    // Inventus ekran kartı bilgisinde doğrudan
-    // "Önerilen PSU" varsa onu alt sınır kabul et.
-    if (
-      gpuRecommendedPsu >
-      recommendedWatt
-    ) {
-      recommendedWatt =
-        gpuRecommendedPsu;
-    }
+    const recommendedWatt =
+      roundPsuStep(
+        requiredWatt
+      );
 
     const matchingPsus = [
       ...psus,
@@ -257,22 +474,25 @@ export default function PsuHesaplayiciPage() {
             getSpec(item, [
               "Güç",
               "güç",
-            ])
+            ]) || item.name
           );
 
         return (
-          watt >= recommendedWatt
+          watt >=
+          recommendedWatt
         );
       })
       .sort((a, b) => {
         const wattA =
           parseWatt(
-            getSpec(a, ["Güç"])
+            getSpec(a, ["Güç"]) ||
+              a.name
           );
 
         const wattB =
           parseWatt(
-            getSpec(b, ["Güç"])
+            getSpec(b, ["Güç"]) ||
+              b.name
           );
 
         if (wattA !== wattB) {
@@ -535,6 +755,11 @@ export default function PsuHesaplayiciPage() {
                     />
                     %30 Güvenlik Payı
                   </span>
+                </div>
+
+                <div className="text-[11px] leading-5 text-zinc-500 -mt-2">
+                  Hesaplama; CPU güç sınıfı, GPU TGP/TBP değeri veya model bazlı yedek güç değeri,
+                  RAM, depolama ve temel sistem tüketimi üzerinden yapılır.
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

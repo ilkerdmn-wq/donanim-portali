@@ -264,6 +264,12 @@ function minRamCapacityGb(
     return budget >= 60000 ? 32 : 16;
   }
 
+  // 100K+ oyun sistemlerinde 16 GB artık alt seviye kalıyor.
+  // Yüksek segmentte minimum 32 GB zorunlu tutulur.
+  if (usage === "oyun" && budget >= 100000) {
+    return 32;
+  }
+
   return 16;
 }
 
@@ -358,6 +364,78 @@ function parsePsuEfficiencyRank(
   if (raw.includes("BRONZE")) return 1;
 
   return 0;
+}
+
+
+function inferChipset(item: PricedHardwareItem) {
+  const raw = normalizeText(
+    [
+      getSpec(item, [
+        "Chipset",
+        "Yonga Seti",
+        "Yonga",
+      ]),
+      item.name,
+      item.description || "",
+    ].join(" ")
+  );
+
+  const match = raw.match(
+    /\b(A520|A620|A620A|B450|B550|B650|B650E|B840|B850|X570|X670|X670E|X870|X870E|H610|H670|H770|H810|B660|B760|B860|Z690|Z790|Z890)\b/i
+  );
+
+  return match?.[1]?.toUpperCase() || "";
+}
+
+function motherboardQualityRank(
+  item: PricedHardwareItem
+) {
+  const chipset = inferChipset(item);
+
+  const ranks: Record<string, number> = {
+    A520: 1,
+    A620: 1,
+    A620A: 1,
+    H610: 1,
+    H810: 1,
+
+    B450: 2,
+    B550: 3,
+    B650: 3,
+    B650E: 4,
+    B840: 2,
+    B850: 4,
+    B660: 2,
+    B760: 3,
+    B860: 4,
+    H670: 2,
+    H770: 3,
+
+    X570: 4,
+    X670: 4,
+    X670E: 5,
+    X870: 5,
+    X870E: 5,
+    Z690: 4,
+    Z790: 5,
+    Z890: 5,
+  };
+
+  return ranks[chipset] || 2;
+}
+
+function isEntryLevelHighEndBoard(
+  item: PricedHardwareItem
+) {
+  const chipset = inferChipset(item);
+
+  return [
+    "A520",
+    "A620",
+    "A620A",
+    "H610",
+    "H810",
+  ].includes(chipset);
 }
 
 function isPricePerformanceBand(
@@ -538,9 +616,19 @@ function isCpuGpuBalanced(
     return false;
   }
 
-  // Oyun sisteminde işlemciye GPU'dan fazla bütçe gömmeyi de önle.
-  if (usage === "oyun" && ratio > 1.15) {
-    return false;
+  // Oyun sisteminde işlemciye gereğinden fazla bütçe gömmeyi önle.
+  // Bütçe büyüdükçe GPU'nun sistemde daha baskın olması gerekir.
+  if (usage === "oyun") {
+    const maxRatio =
+      budget >= 100000
+        ? 0.5
+        : budget >= 65000
+        ? 0.7
+        : 1.15;
+
+    if (ratio > maxRatio) {
+      return false;
+    }
   }
 
   return true;
@@ -688,6 +776,55 @@ function buildScore(
 
     score -= Math.abs(gpuShare - idealGpu) * 100;
     score += gpuShare * 18;
+
+    if (budget >= 100000) {
+      // 100K+ oyun sisteminde bütçenin ana payı GPU'ya gitmeli.
+      if (gpuShare < 0.36) {
+        score -= 300;
+      } else if (gpuShare < 0.4) {
+        score -= 110;
+      } else if (gpuShare >= 0.42) {
+        score += 24;
+      }
+
+      // Çok pahalı CPU / anakart / RAM / SSD GPU bütçesini yemesin.
+      if (cpuShare > 0.22) {
+        score -= 220;
+      } else if (cpuShare > 0.19) {
+        score -= 70;
+      }
+
+      const boardShare = currentPrice(build.anakart) / budget;
+      const ramShare = currentPrice(build.ram) / budget;
+      const ssdShare = currentPrice(build.ssd) / budget;
+      const psuShare = currentPrice(build.psu) / budget;
+
+      if (boardShare > 0.15) score -= 180;
+      else if (boardShare > 0.13) score -= 70;
+      else if (boardShare >= 0.08 && boardShare <= 0.12) score += 8;
+
+      if (ramShare > 0.15) score -= 350;
+      else if (ramShare > 0.12) score -= 120;
+      else if (ramShare >= 0.07 && ramShare <= 0.11) score += 12;
+
+      if (ssdShare > 0.12) score -= 220;
+      else if (ssdShare > 0.1) score -= 70;
+      else if (ssdShare >= 0.05 && ssdShare <= 0.09) score += 8;
+
+      if (psuShare > 0.11) score -= 80;
+      else if (psuShare <= 0.08) score += 5;
+
+      const boardRank =
+        motherboardQualityRank(build.anakart);
+
+      if (isEntryLevelHighEndBoard(build.anakart)) {
+        score -= 260;
+      } else if (boardRank >= 4) {
+        score += 12;
+      } else if (boardRank >= 3) {
+        score += 7;
+      }
+    }
   } else if (usage === "render") {
     score -= Math.abs(cpuShare - 0.28) * 80;
     score += cpuShare * 14;
@@ -719,7 +856,10 @@ function buildScore(
   }
 
   if (build.ramModuleCount >= 2) {
-    score += 4;
+    score += budget >= 100000 && usage === "oyun" ? 18 : 4;
+  } else if (budget >= 100000 && usage === "oyun") {
+    // Yüksek segment oyun sisteminde tek modül RAM ciddi puan kaybeder.
+    score -= 120;
   }
 
   const ramFlags =
@@ -917,6 +1057,32 @@ function createBuilds(
       psuRatio = 0.08;
       ssdRatio = 0.18;
     }
+
+    if (budget >= 100000) {
+      // Yüksek segment oyun sisteminde GPU önceliğini belirgin artır.
+      if (resolution === "4K") {
+        gpuRatio = 0.5;
+        cpuRatio = 0.14;
+        boardRatio = 0.08;
+        ramRatio = 0.08;
+        psuRatio = 0.07;
+        ssdRatio = 0.13;
+      } else if (resolution === "1440p") {
+        gpuRatio = 0.46;
+        cpuRatio = 0.16;
+        boardRatio = 0.09;
+        ramRatio = 0.08;
+        psuRatio = 0.07;
+        ssdRatio = 0.14;
+      } else {
+        gpuRatio = 0.42;
+        cpuRatio = 0.18;
+        boardRatio = 0.09;
+        ramRatio = 0.08;
+        psuRatio = 0.07;
+        ssdRatio = 0.16;
+      }
+    }
   } else if (usage === "render") {
     cpuRatio = 0.29;
     gpuRatio = 0.27;
@@ -985,10 +1151,35 @@ function createBuilds(
 
     if (!boards.length) continue;
 
+    let boardPool = [...boards];
+
+    if (usage === "oyun" && budget >= 100000) {
+      // Yüksek segmentte H610/H810/A520/A620 gibi giriş seviyesi
+      // anakartları, daha dengeli bir alternatif varsa havuzdan çıkar.
+      const betterBoards = boardPool.filter(
+        (board) =>
+          !isEntryLevelHighEndBoard(board) &&
+          currentPrice(board) <= budget * 0.15
+      );
+
+      if (betterBoards.length) {
+        boardPool = betterBoards;
+      } else {
+        const cappedBoards = boardPool.filter(
+          (board) =>
+            currentPrice(board) <= budget * 0.15
+        );
+
+        if (cappedBoards.length) {
+          boardPool = cappedBoards;
+        }
+      }
+    }
+
     const boardCandidates = candidateList(
-      boards,
+      boardPool,
       budget * boardRatio,
-      4
+      6
     );
 
     for (const gpu of gpuCandidates) {
@@ -1025,8 +1216,13 @@ function createBuilds(
         continue;
       }
 
-      const requiredPsuWatt =
+      let requiredPsuWatt =
         calcPsuRequirement(cpu, gpu);
+
+      // 100K+ oyun sistemlerinde yükseltme payı için en az 750W hedefle.
+      if (usage === "oyun" && budget >= 100000) {
+        requiredPsuWatt = Math.max(requiredPsuWatt, 750);
+      }
 
       let psuPool = hardware.psu.filter(
         (item) => {
@@ -1117,6 +1313,42 @@ function createBuilds(
 
         let ramPool = [...allCompatibleRam];
 
+        if (usage === "oyun" && budget >= 100000) {
+          // Yüksek segmentte 32 GB çift modül ilk tercihtir.
+          const ideal32DualPool = ramPool.filter(
+            (ram) =>
+              parseCapacityGb(ram) === 32 &&
+              parseRamModuleCount(ram) >= 2 &&
+              currentPrice(ram) <= budget * 0.15
+          );
+
+          if (ideal32DualPool.length) {
+            ramPool = ideal32DualPool;
+          } else {
+            const dualModulePool = ramPool.filter(
+              (ram) =>
+                parseCapacityGb(ram) >= 32 &&
+                parseRamModuleCount(ram) >= 2 &&
+                currentPrice(ram) <= budget * 0.15
+            );
+
+            if (dualModulePool.length) {
+              ramPool = dualModulePool;
+            }
+          }
+
+          // 100K+ oyun sisteminde RAM'e bütçenin %15'inden fazlasını
+          // vermek yerine sonuç üretmemek daha doğru kabul edilir.
+          const sanePricePool = ramPool.filter(
+            (ram) =>
+              currentPrice(ram) <= budget * 0.15
+          );
+
+          if (sanePricePool.length) {
+            ramPool = sanePricePool;
+          }
+        }
+
         if (isPricePerformanceBand(budget)) {
           // 1) Önce hedef kapasiteyi tercih et.
           const preferredPool =
@@ -1206,18 +1438,35 @@ function createBuilds(
             ? 500
             : 1000;
 
-        const storagePool = hardware.ssd.filter(
+        let storagePool = hardware.ssd.filter(
           (ssd) =>
             parseCapacityGb(ssd) >=
             preferredStorageGb
         );
+
+        if (
+          usage === "oyun" &&
+          budget >= 100000
+        ) {
+          const saneStoragePool =
+            storagePool.filter(
+              (ssd) =>
+                currentPrice(ssd) <=
+                budget * 0.12
+            );
+
+          if (saneStoragePool.length) {
+            storagePool =
+              saneStoragePool;
+          }
+        }
 
         if (!storagePool.length) continue;
 
         const ssdCandidates = candidateList(
           storagePool,
           budget * ssdRatio,
-          4
+          6
         );
 
         for (const ram of ramCandidates) {
@@ -1242,6 +1491,49 @@ function createBuilds(
                 currentPrice(ssd);
 
               if (total > budget) continue;
+
+              if (
+                usage === "oyun" &&
+                budget >= 100000
+              ) {
+                const gpuShare =
+                  currentPrice(gpu) / budget;
+                const cpuShare =
+                  currentPrice(cpu) / budget;
+                const boardShare =
+                  currentPrice(anakart) / budget;
+                const ramShare =
+                  currentPrice(ram) / budget;
+                const psuShare =
+                  currentPrice(psu) / budget;
+                const ssdShare =
+                  currentPrice(ssd) / budget;
+
+                // Son kalite kapısı:
+                // teknik olarak uyumlu olsa bile bütçe dağılımı kötü olan
+                // 100K+ oyun sistemleri öneri listesine hiç girmez.
+                if (gpuShare < 0.36) continue;
+                if (cpuShare > 0.22) continue;
+                if (boardShare > 0.15) continue;
+                if (ramShare > 0.15) continue;
+                if (psuShare > 0.11) continue;
+                if (ssdShare > 0.12) continue;
+
+                if (
+                  parseCapacityGb(ram) < 32 ||
+                  parseRamModuleCount(ram) < 2
+                ) {
+                  continue;
+                }
+
+                if (
+                  isEntryLevelHighEndBoard(
+                    anakart
+                  )
+                ) {
+                  continue;
+                }
+              }
 
               const storageGb =
                 parseCapacityGb(ssd);
@@ -1333,6 +1625,9 @@ export default function PcOneriPage() {
   const [system, setSystem] =
     useState<BuildSystem | null>(null);
 
+  const [isGenerating, setIsGenerating] =
+    useState(false);
+
   useEffect(() => {
     async function loadHardware() {
       try {
@@ -1420,8 +1715,14 @@ export default function PcOneriPage() {
     [hardwareData]
   );
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    if (isGenerating) return;
+
     setGenerateError(null);
+    setIsGenerating(true);
+
+    // Hesaplama çok hızlı olsa bile kullanıcı çalışma durumunu görebilsin.
+    await new Promise((resolve) => setTimeout(resolve, 900));
 
     const budget = getBudgetForTier(
       budgetTier,
@@ -1445,6 +1746,7 @@ export default function PcOneriPage() {
           ", "
         )}.`
       );
+      setIsGenerating(false);
       return;
     }
 
@@ -1459,6 +1761,7 @@ export default function PcOneriPage() {
       setGenerateError(
         "Bu seviye için dengeli ve uyumlu bir sistem bulunamadı. Bir üst seviye bütçe aralığını seçmeyi deneyin."
       );
+      setIsGenerating(false);
       return;
     }
 
@@ -1480,6 +1783,7 @@ export default function PcOneriPage() {
     setSystem(selectedBuild);
     setHasGenerated(true);
     setGenerationIndex((prev) => prev + 1);
+    setIsGenerating(false);
   };
 
   return (
@@ -1671,15 +1975,57 @@ export default function PcOneriPage() {
 
             <button
               onClick={handleGenerate}
-              className="w-full py-4 bg-gradient-to-r from-cyan-400 to-cyan-500 text-zinc-950 font-bold rounded-2xl flex items-center justify-center gap-2 text-sm"
+              disabled={isGenerating}
+              className={`w-full py-4 font-bold rounded-2xl flex items-center justify-center gap-2 text-sm transition-all ${
+                isGenerating
+                  ? "bg-zinc-800 text-zinc-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-cyan-400 to-cyan-500 text-zinc-950 hover:from-cyan-300 hover:to-cyan-400"
+              }`}
             >
-              <Sparkles size={16} />
-              YENİ ÖNERİ OLUŞTUR
+              {isGenerating ? (
+                <>
+                  <Loader2 size={17} className="animate-spin" />
+                  ÖNERİ HAZIRLANIYOR...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={16} />
+                  YENİ ÖNERİ OLUŞTUR
+                </>
+              )}
             </button>
           </div>
 
           <div className="lg:col-span-7 p-8 bg-zinc-900/60 border border-zinc-800/80 rounded-3xl min-h-[520px] flex items-center justify-center">
-            {!hasGenerated || !system ? (
+            {isGenerating ? (
+              <div className="w-full max-w-md text-center flex flex-col items-center gap-5 py-10">
+                <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                  <Loader2
+                    size={30}
+                    className="animate-spin text-cyan-400"
+                  />
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-bold text-white">
+                    En uygun sistem hazırlanıyor
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-2 leading-5">
+                    Güncel fiyatlar, CPU-GPU dengesi, RAM yapısı,
+                    anakart uyumu ve PSU gereksinimi kontrol ediliyor...
+                  </p>
+                </div>
+
+                <div className="w-full h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                  <div className="h-full w-2/3 rounded-full bg-cyan-400 animate-pulse" />
+                </div>
+
+                <div className="text-[11px] text-cyan-400 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  Fiyat / performans kombinasyonları taranıyor
+                </div>
+              </div>
+            ) : !hasGenerated || !system ? (
               <div className="text-center text-zinc-400 text-sm">
                 Sistem seviyesini ve kullanım amacını
                 belirleyip öneri oluştur.

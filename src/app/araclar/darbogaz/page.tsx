@@ -120,6 +120,12 @@ function parseCpuBoost(item: PricedHardwareItem) {
 function cpuGenerationBonus(name: string) {
   const n = name.toUpperCase();
 
+  if (n.includes("X3D")) {
+    if (/RYZEN\s+[3579]\s+9\d{3}/.test(n)) return 1.30;
+    if (/RYZEN\s+[3579]\s+7\d{3}/.test(n)) return 1.26;
+    if (/RYZEN\s+[3579]\s+5\d{3}/.test(n)) return 1.08;
+  }
+
   if (/RYZEN\s+[3579]\s+9\d{3}/.test(n)) return 1.18;
   if (/RYZEN\s+[3579]\s+8\d{3}/.test(n)) return 1.14;
   if (/RYZEN\s+[3579]\s+7\d{3}/.test(n)) return 1.1;
@@ -301,12 +307,14 @@ function calculateBalance(
   // CPU gücünü GPU ölçeğine yaklaştır.
   const cpuScore = rawCpu * 2.35;
 
+  // Çözünürlük yükseldikçe CPU üzerindeki baskı azalır,
+  // GPU sınırlaması daha baskın hale gelir.
   const resolutionFactor =
     resolution === "1080p"
       ? 1
       : resolution === "1440p"
-      ? 0.86
-      : 0.72;
+      ? 0.80
+      : 0.62;
 
   const requiredCpu =
     rawGpu * resolutionFactor;
@@ -321,41 +329,80 @@ function calculateBalance(
   let status: BalanceResult["status"] =
     "good";
 
-  if (ratio < 0.62) {
+  if (ratio < 0.55) {
+    // Çok güçlü GPU + belirgin zayıf CPU.
     risk = Math.round(
-      Math.min(45, (0.8 - ratio) * 55)
+      Math.min(
+        45,
+        24 +
+          (0.55 - ratio) * 50
+      )
     );
 
     status = "high";
-    title = "Yüksek CPU darboğazı riski";
+    title =
+      "Yüksek CPU darboğazı riski";
 
     description =
-      "İşlemci, seçilen ekran kartını özellikle işlemci ağırlıklı oyunlarda tam beslemekte zorlanabilir.";
-  } else if (ratio < 0.82) {
+      "İşlemci, seçilen ekran kartını özellikle 1080p ve işlemci ağırlıklı oyunlarda belirgin şekilde sınırlayabilir.";
+  } else if (ratio < 0.78) {
+    // Orta düzey CPU yetersizliği.
     risk = Math.round(
-      Math.min(25, (0.9 - ratio) * 40)
+      Math.min(
+        24,
+        10 +
+          (0.78 - ratio) * 35
+      )
     );
 
     status = "warning";
-    title = "Orta düzey CPU darboğazı riski";
+    title =
+      "Orta düzey CPU darboğazı riski";
 
     description =
-      "Sistem kullanılabilir ancak bazı oyunlarda ekran kartının tam performansına ulaşmak zorlaşabilir.";
-  } else if (ratio > 2.3) {
+      "Sistem kullanılabilir ancak bazı oyunlarda ekran kartı tam kapasitesine ulaşamayabilir. Daha yüksek çözünürlükte bu risk genellikle azalır.";
+  } else if (ratio > 2.15) {
+    // CPU çok daha güçlü; bu klasik darboğaz değil,
+    // sistemin GPU tarafından sınırlanmasıdır.
     risk = Math.round(
-      Math.min(30, (ratio - 2) * 14)
+      Math.min(
+        35,
+        12 +
+          (ratio - 2.15) * 10
+      )
     );
 
     status = "warning";
-    title = "Ekran kartı sistemi sınırlıyor";
+    title =
+      "GPU sınırlı sistem";
 
     description =
-      "İşlemci ekran kartına göre belirgin şekilde güçlü. Oyun odaklı sistemde bütçenin bir kısmı daha güçlü ekran kartına ayrılabilir.";
+      "İşlemci ekran kartına göre belirgin şekilde daha güçlü. Bu bir CPU darboğazı değildir; oyun performansını ağırlıklı olarak ekran kartı belirler.";
+  } else if (ratio > 1.75) {
+    risk = Math.round(
+      Math.min(
+        18,
+        8 +
+          (ratio - 1.75) * 12
+      )
+    );
+
+    status = "warning";
+    title =
+      "Hafif GPU sınırlaması";
+
+    description =
+      "İşlemci tarafında yeterli pay var. Oyunlarda ana sınırlayıcı çoğunlukla ekran kartı olacaktır.";
   } else {
+    // Dengeli bant.
+    const center = 1.18;
     risk = Math.round(
       Math.max(
-        2,
-        Math.abs(1.25 - ratio) * 8
+        1,
+        Math.min(
+          8,
+          Math.abs(center - ratio) * 10
+        )
       )
     );
 
@@ -729,7 +776,7 @@ export default function DarbogazPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-950">
                     <div className="text-[11px] text-zinc-500">
-                      Tahmini risk
+                      Tahmini denge riski
                     </div>
 
                     <div className="text-3xl font-black text-cyan-400 mt-1">
@@ -799,10 +846,8 @@ export default function DarbogazPage() {
                 </div>
 
                 <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-[11px] leading-5 text-amber-200/80">
-                  Bu araç tahmini denge analizi yapar.
-                  Gerçek darboğaz; oyun, grafik ayarı,
-                  sürücü, RAM ve arka plan yüküne göre
-                  değişebilir.
+                  Bu araç tahmini denge analizi yapar; gösterilen yüzde kesin bir performans kaybı değildir.
+                  Gerçek sınırlama; oyun, çözünürlük, grafik ayarı, sürücü, RAM ve arka plan yüküne göre değişebilir.
                 </div>
               </div>
             )}
