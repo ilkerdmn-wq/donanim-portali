@@ -17,6 +17,7 @@ import {
   Sparkles,
   Wrench,
   Layers,
+  Mail,
   Construction,
   LogOut,
   LayoutDashboard,
@@ -211,6 +212,11 @@ function PortalShell({
       href: "/donanim",
       label: "Donanım",
       icon: Layers,
+    },
+    {
+      href: "/iletisim",
+      label: "İletişim",
+      icon: Mail,
     },
   ];
 

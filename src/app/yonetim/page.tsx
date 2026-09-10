@@ -16,6 +16,7 @@ import {
   Zap,
   HardDrive,
   Newspaper,
+  Mail,
   Settings,
   ArrowRight,
   ShieldCheck,
@@ -84,6 +85,12 @@ const contentCards = [
     description: "Portalın genel ayarlarını ve yapılandırmasını yönet.",
     href: "/yonetim/ayarlar",
     icon: Settings,
+  },
+  {
+    title: "Gelen Mesajlar",
+    description: "Ziyaretçilerden gelen iletişim mesajlarını görüntüle ve yönet.",
+    href: "/yonetim/mesajlar",
+    icon: Mail,
   },
 ];
 
