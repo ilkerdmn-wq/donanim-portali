@@ -69,37 +69,31 @@ const quickTools = [
 const hardwareLists = [
   {
     title: "İşlemciler",
-    count: 0,
     icon: Settings,
     href: "/donanim/islemciler",
   },
   {
     title: "Ekran Kartları",
-    count: 0,
     icon: Monitor,
     href: "/donanim/ekran-kartlari",
   },
   {
     title: "Anakartlar",
-    count: 0,
     icon: Layout,
     href: "/donanim/anakartlar",
   },
   {
     title: "Bellekler",
-    count: 0,
     icon: Database,
     href: "/donanim/bellekler",
   },
   {
     title: "Güç Kaynakları",
-    count: 0,
     icon: Zap,
     href: "/donanim/guc-kaynaklari",
   },
   {
     title: "Depolama",
-    count: 0,
     icon: HardDrive,
     href: "/donanim/depolama",
   },
@@ -118,11 +112,8 @@ export default function HomePage() {
           <div className="p-10 border border-zinc-800/80 rounded-3xl bg-zinc-900/40 flex flex-col items-start gap-4 shadow-sm">
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/50 border border-cyan-900/50 text-cyan-400 text-[10px] font-extrabold uppercase tracking-widest">
-
               <Sparkles size={12} />
-
               YENİ NESİL TEKNOLOJİ ÜSSÜ
-
             </div>
 
             <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
@@ -200,15 +191,15 @@ export default function HomePage() {
 
             <div className="flex flex-col gap-1">
 
-              {hardwareLists.map((hw, idx) => {
+              {hardwareLists.map((hw) => {
 
                 const Icon = hw.icon;
 
                 return (
                   <Link
-                    key={idx}
+                    key={hw.href}
                     href={hw.href}
-                    className="flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-zinc-800/40 transition-all group border border-transparent"
+                    className="flex items-center px-4 py-3.5 rounded-2xl hover:bg-zinc-800/40 transition-all group border border-transparent"
                   >
 
                     <div className="flex items-center gap-3.5">
@@ -223,10 +214,6 @@ export default function HomePage() {
                       </span>
 
                     </div>
-
-                    <span className="px-2 py-0.5 rounded-md bg-zinc-800/80 text-[10px] text-zinc-400 font-bold">
-                      {hw.count}
-                    </span>
 
                   </Link>
                 );

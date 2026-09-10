@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export default function ScrollToTop() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     window.scrollTo({
@@ -13,7 +12,7 @@ export default function ScrollToTop() {
       left: 0,
       behavior: "auto",
     });
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   return null;
 }
