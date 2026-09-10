@@ -1,216 +1,814 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Cpu, Monitor, Gauge, AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
-import { hardwareData, HardwareItem } from "@/data/hardwareData";
+import {
+  ArrowLeft,
+  Activity,
+  Cpu,
+  Monitor,
+  Loader2,
+  AlertTriangle,
+  ShieldCheck,
+} from "lucide-react";
 
-export default function DarbogazPage() {
-  const [selectedCpu, setSelectedCpu] = useState<HardwareItem | null>(hardwareData.islemci[3] || null);
-  const [selectedGpu, setSelectedGpu] = useState<HardwareItem | null>(hardwareData["ekran-karti"][3] || null);
-  const [resolution, setResolution] = useState<string>("1440p");
-  const [analyzed, setAnalyzed] = useState<boolean>(false);
+import type { PricedHardwareItem } from "@/app/lib/hardware-types";
 
-  const [bottleneckResult, setBottleneckResult] = useState<{
-    percentage: number;
-    status: string;
-    description: string;
-    color: string;
-  }>({ percentage: 0, status: "", description: "", color: "" });
+type Resolution = "1080p" | "1440p" | "4K";
 
-  const handleCalculate = () => {
-    if (!selectedCpu || !selectedGpu) return;
+type BalanceResult = {
+  risk: number;
+  status: "good" | "warning" | "high";
+  title: string;
+  description: string;
+  cpuScore: number;
+  gpuScore: number;
+};
 
-    // Basit ama gerçekçi bir darboğaz simülasyon mantığı (Fiyat ve güç oranlarına göre)
-    const cpuScore = selectedCpu.price;
-    const gpuScore = selectedGpu.price / 2.2; // GPU fiyat ölçeğini dengele
+function getSpec(
+  item: PricedHardwareItem | null | undefined,
+  keys: string[]
+) {
+  const specs = item?.specs;
+  if (!specs) return "";
 
-    let ratio = 0;
-    if (resolution === "1080p") {
-      // 1080p'de işlemci gücü çok önemlidir
-      if (gpuScore > cpuScore * 1.3) {
-        ratio = Math.min(32, Math.round(((gpuScore - cpuScore) / cpuScore) * 18));
-      } else {
-        ratio = Math.floor(Math.random() * 4) + 1; // %1 - %4 İdeal
-      }
-    } else if (resolution === "1440p") {
-      if (gpuScore > cpuScore * 1.6) {
-        ratio = Math.min(22, Math.round(((gpuScore - cpuScore) / cpuScore) * 12));
-      } else {
-        ratio = Math.floor(Math.random() * 3); // %0 - %2 İdeal
-      }
-    } else { // 4K
-      // 4K'da yük tamamen ekran kartındadır
-      if (gpuScore > cpuScore * 2.2) {
-        ratio = Math.min(10, Math.round(((gpuScore - cpuScore) / cpuScore) * 5));
-      } else {
-        ratio = 0; // Kusursuz
-      }
+  for (const key of keys) {
+    const value = specs[key];
+
+    if (
+      value !== undefined &&
+      value !== null &&
+      String(value).trim() !== ""
+    ) {
+      return String(value).trim();
     }
+  }
 
-    const finalPercentage = Math.max(0, ratio);
+  const wanted = keys.map((key) =>
+    key.toLocaleLowerCase("tr-TR")
+  );
 
-    let status = "";
-    let description = "";
-    let color = "";
-
-    if (finalPercentage <= 5) {
-      status = "İdeal Denge (Darboğaz Yok)";
-      description = "Seçtiğiniz işlemci ve ekran kartı birbirini tam anlamıyla besliyor. Bileşenlerden tam performans alabilirsiniz.";
-      color = "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
-    } else if (finalPercentage <= 15) {
-      status = "Hafif Darboğaz";
-      description = "Bazı yüksek kare hızına (FPS) odaklı rekabetçi oyunlarda işlemci hafif düzeyde sınırlama yaratabilir, günlük kullanımda sorun yaşatmaz.";
-      color = "text-amber-400 bg-amber-500/10 border-amber-500/30";
-    } else {
-      status = "Belirgin Darboğaz";
-      description = "Ekran kartınız işlemcinize kıyasla oldukça güçlü kalıyor. İşlemci yükseltmesi yapmanız veya çözünürlüğü artırmanız önerilir.";
-      color = "text-red-400 bg-red-500/10 border-red-500/30";
+  for (const [key, value] of Object.entries(specs)) {
+    if (
+      wanted.includes(
+        key.toLocaleLowerCase("tr-TR")
+      ) &&
+      value !== undefined &&
+      value !== null
+    ) {
+      return String(value).trim();
     }
+  }
 
-    setBottleneckResult({
-      percentage: finalPercentage,
-      status,
-      description,
-      color,
-    });
-    setAnalyzed(true);
-  };
+  return "";
+}
+
+function firstNumber(value: string) {
+  const match = value
+    .replace(",", ".")
+    .match(/(\d+(?:\.\d+)?)/);
+
+  return match ? Number(match[1]) : 0;
+}
+
+function parseCpuCores(item: PricedHardwareItem) {
+  const direct = firstNumber(
+    getSpec(item, [
+      "Çekirdek",
+      "Çekirdek Sayısı",
+      "Cores",
+    ])
+  );
+
+  if (direct > 0) return direct;
+
+  const raw = `${item.name} ${item.description || ""}`;
+
+  const match = raw.match(
+    /(\d{1,2})\s*(?:çekirdek|core)/i
+  );
+
+  return match ? Number(match[1]) : 4;
+}
+
+function parseCpuBoost(item: PricedHardwareItem) {
+  const direct = firstNumber(
+    getSpec(item, [
+      "Boost Frekans",
+      "Boost",
+      "Maks. Frekans",
+    ])
+  );
+
+  if (direct > 0) return direct;
+
+  const raw = `${item.name} ${item.description || ""}`;
+
+  const matches = [
+    ...raw.matchAll(
+      /(\d+(?:[.,]\d+)?)\s*GHz/gi
+    ),
+  ].map((m) =>
+    Number(m[1].replace(",", "."))
+  );
+
+  return matches.length
+    ? Math.max(...matches)
+    : 4;
+}
+
+function cpuGenerationBonus(name: string) {
+  const n = name.toUpperCase();
+
+  if (/RYZEN\s+[3579]\s+9\d{3}/.test(n)) return 1.18;
+  if (/RYZEN\s+[3579]\s+8\d{3}/.test(n)) return 1.14;
+  if (/RYZEN\s+[3579]\s+7\d{3}/.test(n)) return 1.1;
+  if (/RYZEN\s+[3579]\s+5\d{3}/.test(n)) return 0.95;
+  if (/RYZEN\s+[3579]\s+3\d{3}/.test(n)) return 0.78;
+
+  const intel = n.match(/I[3579]-(\d{2})\d{3}/);
+  if (intel) {
+    const gen = Number(intel[1]);
+
+    if (gen >= 15) return 1.2;
+    if (gen >= 14) return 1.15;
+    if (gen >= 13) return 1.1;
+    if (gen >= 12) return 1.03;
+    if (gen >= 10) return 0.9;
+  }
+
+  if (
+    n.includes("ATHLON") ||
+    n.includes("CELERON") ||
+    n.includes("PENTIUM")
+  ) {
+    return 0.45;
+  }
+
+  return 0.9;
+}
+
+function cpuStrength(item: PricedHardwareItem) {
+  const cores = parseCpuCores(item);
+  const boost = parseCpuBoost(item);
+  const generation = cpuGenerationBonus(item.name);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <Link href="/araclar" className="text-xs text-zinc-400 hover:text-cyan-400 transition-colors flex items-center gap-1 w-fit mb-2">
-          <ArrowLeft size={14} /> Araçlara dön
-        </Link>
+    Math.min(cores, 12) *
+    boost *
+    generation
+  );
+}
+
+function parseVram(item: PricedHardwareItem) {
+  const raw = [
+    getSpec(item, [
+      "VRAM",
+      "Ekran Kartı Belleği",
+    ]),
+    item.name,
+    item.description || "",
+  ].join(" ");
+
+  const gb = raw.match(
+    /(\d{1,2})\s*GB/i
+  );
+
+  if (gb) return Number(gb[1]);
+
+  const mb = raw.match(
+    /(\d{3,5})\s*MB/i
+  );
+
+  if (mb) {
+    return Number(mb[1]) / 1024;
+  }
+
+  return 4;
+}
+
+function gpuModelScore(name: string) {
+  const n = name
+    .toUpperCase()
+    .replace(/\s+/g, "");
+
+  const rtx = n.match(
+    /RTX(\d{4})(TI|SUPER)?/
+  );
+
+  if (rtx) {
+    const model = Number(rtx[1]);
+    let score = 0;
+
+    if (model >= 5090) score = 100;
+    else if (model >= 5080) score = 90;
+    else if (model >= 5070) score = 76;
+    else if (model >= 5060) score = 62;
+    else if (model >= 4090) score = 94;
+    else if (model >= 4080) score = 84;
+    else if (model >= 4070) score = 72;
+    else if (model >= 4060) score = 58;
+    else if (model >= 3090) score = 78;
+    else if (model >= 3080) score = 70;
+    else if (model >= 3070) score = 60;
+    else if (model >= 3060) score = 50;
+    else if (model >= 3050) score = 39;
+
+    if (rtx[2] === "TI") score += 6;
+    if (rtx[2] === "SUPER") score += 4;
+
+    return score;
+  }
+
+  const rx = n.match(
+    /RX(\d{4})(XT|XTX)?/
+  );
+
+  if (rx) {
+    const model = Number(rx[1]);
+    let score = 0;
+
+    if (model >= 9070) score = 79;
+    else if (model >= 7900) score = 84;
+    else if (model >= 7800) score = 73;
+    else if (model >= 7700) score = 65;
+    else if (model >= 7600) score = 54;
+    else if (model >= 6950) score = 74;
+    else if (model >= 6900) score = 70;
+    else if (model >= 6800) score = 64;
+    else if (model >= 6750) score = 57;
+    else if (model >= 6700) score = 54;
+    else if (model >= 6650) score = 47;
+    else if (model >= 6600) score = 44;
+
+    if (rx[2] === "XT") score += 4;
+    if (rx[2] === "XTX") score += 8;
+
+    return score;
+  }
+
+  const arc = n.match(/ARC[A-Z]?(\d{3})/);
+
+  if (arc) {
+    const model = Number(arc[1]);
+
+    if (model >= 770) return 52;
+    if (model >= 750) return 47;
+    if (model >= 580) return 43;
+  }
+
+  return 35;
+}
+
+function gpuStrength(
+  item: PricedHardwareItem,
+  resolution: Resolution
+) {
+  const model = gpuModelScore(item.name);
+  const vram = parseVram(item);
+
+  let vramBonus = 0;
+
+  if (resolution === "1080p") {
+    if (vram >= 8) vramBonus = 4;
+    else if (vram < 6) vramBonus = -8;
+  }
+
+  if (resolution === "1440p") {
+    if (vram >= 12) vramBonus = 6;
+    else if (vram < 8) vramBonus = -10;
+  }
+
+  if (resolution === "4K") {
+    if (vram >= 16) vramBonus = 8;
+    else if (vram < 12) vramBonus = -12;
+  }
+
+  return Math.max(20, model + vramBonus);
+}
+
+function calculateBalance(
+  cpu: PricedHardwareItem,
+  gpu: PricedHardwareItem,
+  resolution: Resolution
+): BalanceResult {
+  const rawCpu = cpuStrength(cpu);
+  const rawGpu = gpuStrength(
+    gpu,
+    resolution
+  );
+
+  // CPU gücünü GPU ölçeğine yaklaştır.
+  const cpuScore = rawCpu * 2.35;
+
+  const resolutionFactor =
+    resolution === "1080p"
+      ? 1
+      : resolution === "1440p"
+      ? 0.86
+      : 0.72;
+
+  const requiredCpu =
+    rawGpu * resolutionFactor;
+
+  const ratio =
+    cpuScore /
+    Math.max(requiredCpu, 1);
+
+  let risk = 0;
+  let title = "";
+  let description = "";
+  let status: BalanceResult["status"] =
+    "good";
+
+  if (ratio < 0.62) {
+    risk = Math.round(
+      Math.min(45, (0.8 - ratio) * 55)
+    );
+
+    status = "high";
+    title = "Yüksek CPU darboğazı riski";
+
+    description =
+      "İşlemci, seçilen ekran kartını özellikle işlemci ağırlıklı oyunlarda tam beslemekte zorlanabilir.";
+  } else if (ratio < 0.82) {
+    risk = Math.round(
+      Math.min(25, (0.9 - ratio) * 40)
+    );
+
+    status = "warning";
+    title = "Orta düzey CPU darboğazı riski";
+
+    description =
+      "Sistem kullanılabilir ancak bazı oyunlarda ekran kartının tam performansına ulaşmak zorlaşabilir.";
+  } else if (ratio > 2.3) {
+    risk = Math.round(
+      Math.min(30, (ratio - 2) * 14)
+    );
+
+    status = "warning";
+    title = "Ekran kartı sistemi sınırlıyor";
+
+    description =
+      "İşlemci ekran kartına göre belirgin şekilde güçlü. Oyun odaklı sistemde bütçenin bir kısmı daha güçlü ekran kartına ayrılabilir.";
+  } else {
+    risk = Math.round(
+      Math.max(
+        2,
+        Math.abs(1.25 - ratio) * 8
+      )
+    );
+
+    status = "good";
+    title = "Dengeli eşleşme";
+
+    description =
+      "İşlemci ve ekran kartı seçilen çözünürlük için genel olarak dengeli görünüyor.";
+  }
+
+  return {
+    risk,
+    status,
+    title,
+    description,
+    cpuScore,
+    gpuScore: rawGpu,
+  };
+}
+
+export default function DarbogazPage() {
+  const [cpus, setCpus] = useState<
+    PricedHardwareItem[]
+  >([]);
+
+  const [gpus, setGpus] = useState<
+    PricedHardwareItem[]
+  >([]);
+
+  const [cpuId, setCpuId] =
+    useState<number | null>(null);
+
+  const [gpuId, setGpuId] =
+    useState<number | null>(null);
+
+  const [resolution, setResolution] =
+    useState<Resolution>("1080p");
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const [result, setResult] =
+    useState<BalanceResult | null>(null);
+
+  useEffect(() => {
+    async function loadHardware() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(
+          "/api/hardware/available",
+          {
+            cache: "no-store",
+          }
+        );
+
+        const data =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.error ||
+              "Donanımlar yüklenemedi."
+          );
+        }
+
+        const items =
+          data.items as PricedHardwareItem[];
+
+        const cpuItems = items
+          .filter(
+            (item) =>
+              item.category ===
+                "islemciler" &&
+              item.has_valid_price &&
+              item.current_price != null
+          )
+          .sort((a, b) =>
+            a.name.localeCompare(
+              b.name,
+              "tr",
+              {
+                sensitivity: "base",
+              }
+            )
+          );
+
+        const gpuItems = items
+          .filter(
+            (item) =>
+              item.category ===
+                "ekran-kartlari" &&
+              item.has_valid_price &&
+              item.current_price != null
+          )
+          .sort((a, b) =>
+            a.name.localeCompare(
+              b.name,
+              "tr",
+              {
+                sensitivity: "base",
+              }
+            )
+          );
+
+        setCpus(cpuItems);
+        setGpus(gpuItems);
+
+        if (cpuItems[0]) {
+          setCpuId(cpuItems[0].id);
+        }
+
+        if (gpuItems[0]) {
+          setGpuId(gpuItems[0].id);
+        }
+      } catch (err: any) {
+        setError(
+          err?.message ||
+            "Donanımlar yüklenemedi."
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadHardware();
+  }, []);
+
+  const selectedCpu = useMemo(
+    () =>
+      cpus.find(
+        (item) => item.id === cpuId
+      ) || null,
+    [cpus, cpuId]
+  );
+
+  const selectedGpu = useMemo(
+    () =>
+      gpus.find(
+        (item) => item.id === gpuId
+      ) || null,
+    [gpus, gpuId]
+  );
+
+  const handleCalculate = () => {
+    if (!selectedCpu || !selectedGpu) {
+      setResult(null);
+      return;
+    }
+
+    setResult(
+      calculateBalance(
+        selectedCpu,
+        selectedGpu,
+        resolution
+      )
+    );
+  };
+
+  const resultClasses =
+    result?.status === "good"
+      ? "border-emerald-500/30 bg-emerald-500/5"
+      : result?.status === "high"
+      ? "border-red-500/30 bg-red-500/5"
+      : "border-amber-500/30 bg-amber-500/5";
+
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col gap-6">
+      <Link
+        href="/araclar"
+        className="text-xs text-zinc-400 hover:text-cyan-400 transition-colors flex items-center gap-1 w-fit"
+      >
+        <ArrowLeft size={14} />
+        Araçlara dön
+      </Link>
+
+      <div>
         <h1 className="text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
-          <span className="text-cyan-400">⚡</span> Darboğaz Hesaplayıcı
+          <Activity
+            size={28}
+            className="text-cyan-400"
+          />
+          Darboğaz Hesaplayıcı
         </h1>
-        <p className="text-zinc-400 text-sm">İşlemci ve ekran kartı bileşenlerini seçerek performans uyumunu ve darboğaz oranını hesaplayın.</p>
+
+        <p className="text-sm text-zinc-500 mt-2">
+          İşlemci ve ekran kartının seçilen
+          çözünürlükte ne kadar dengeli olduğunu
+          tahmini olarak analiz eder.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Sol Panel: Seçimler */}
-        <div className="lg:col-span-6 p-6 bg-zinc-900 border border-zinc-800 rounded-3xl flex flex-col gap-6 shadow-sm">
-          <div className="flex items-center gap-2 text-cyan-400 text-sm font-bold tracking-wider">
-            <Gauge size={18} /> BİLEŞEN SEÇİMİ
-          </div>
-
-          {/* İşlemci Seçimi */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-zinc-400 tracking-wider flex items-center gap-1.5">
-              <Cpu size={14} className="text-cyan-400" /> İŞLEMCİ (CPU)
-            </label>
-            <select
-              value={selectedCpu?.id || ""}
-              onChange={(e) => {
-                const found = hardwareData.islemci.find((i) => i.id === e.target.value);
-                setSelectedCpu(found || null);
-              }}
-              className="w-full p-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl text-white text-sm focus:outline-none focus:border-cyan-500 transition-all cursor-pointer"
-            >
-              {hardwareData.islemci.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name} ({item.price.toLocaleString("tr-TR")} ₺)
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Ekran Kartı Seçimi */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-zinc-400 tracking-wider flex items-center gap-1.5">
-              <Monitor size={14} className="text-cyan-400" /> EKRAN KARTI (GPU)
-            </label>
-            <select
-              value={selectedGpu?.id || ""}
-              onChange={(e) => {
-                const found = hardwareData["ekran-karti"].find((i) => i.id === e.target.value);
-                setSelectedGpu(found || null);
-              }}
-              className="w-full p-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl text-white text-sm focus:outline-none focus:border-cyan-500 transition-all cursor-pointer"
-            >
-              {hardwareData["ekran-karti"].map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name} ({item.price.toLocaleString("tr-TR")} ₺)
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Çözünürlük Seçimi */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-zinc-400 tracking-wider">HEDEF ÇÖZÜNÜRLÜK</label>
-            <div className="grid grid-cols-3 gap-2">
-              {["1080p", "1440p", "4K"].map((res) => (
-                <button
-                  key={res}
-                  onClick={() => setResolution(res)}
-                  className={`py-3 rounded-2xl border text-xs font-bold transition-all ${
-                    resolution === res
-                      ? "bg-cyan-500/10 border-cyan-500 text-cyan-400"
-                      : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
-                  }`}
-                >
-                  {res}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <button
-            onClick={handleCalculate}
-            className="w-full py-4 bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-300 hover:to-cyan-400 text-zinc-950 font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2 text-sm tracking-wide mt-2"
-          >
-            <Sparkles size={16} /> Darboğazı Hesapla
-          </button>
+      {loading && (
+        <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900 flex items-center gap-3 text-zinc-400">
+          <Loader2
+            size={18}
+            className="animate-spin text-cyan-400"
+          />
+          Güncel donanımlar yükleniyor...
         </div>
+      )}
 
-        {/* Sağ Panel: Analiz Sonucu */}
-        <div className="lg:col-span-6 p-8 bg-zinc-900/60 border border-zinc-800/80 rounded-3xl min-h-[460px] flex items-center justify-center">
-          {!analyzed ? (
-            <div className="flex flex-col items-center text-center gap-3 max-w-sm">
-              <div className="w-14 h-14 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-center text-cyan-400 shadow-inner">
-                <Gauge size={24} />
-              </div>
-              <h3 className="text-white font-bold text-lg">Analiz için bileşen seçin</h3>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                İşlemci ve ekran kartı eşleşmesini test ederek darboğaz oranını ve tavsiyeleri görüntüleyin.
-              </p>
+      {error && (
+        <div className="p-5 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-300 text-sm">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-5 p-6 rounded-3xl border border-zinc-800 bg-zinc-900 flex flex-col gap-5">
+            <div className="flex items-center gap-2 text-cyan-400 text-sm font-bold">
+              <Cpu size={17} />
+              DONANIM SEÇİMİ
             </div>
-          ) : (
-            <div className="w-full flex flex-col gap-6">
-              <div className="flex justify-between items-center border-b border-zinc-800 pb-4">
-                <h3 className="text-base font-bold text-white">Analiz Raporu</h3>
-                <span className={`px-3 py-1 border rounded-xl text-xs font-bold flex items-center gap-1.5 ${bottleneckResult.color}`}>
-                  {bottleneckResult.percentage <= 5 ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
-                  {bottleneckResult.status}
-                </span>
-              </div>
 
-              <div className="flex flex-col items-center justify-center p-6 bg-zinc-950 border border-zinc-800 rounded-2xl gap-3">
-                <span className="text-xs font-semibold text-zinc-400 tracking-wider">TAHMİNİ DARBOĞAZ ORANI</span>
-                <div className="text-5xl font-extrabold text-cyan-400">
-                  %{bottleneckResult.percentage}
-                </div>
-                <div className="w-full bg-zinc-900 h-2.5 rounded-full overflow-hidden mt-2 border border-zinc-800">
-                  <div 
-                    className={`h-full transition-all duration-500 ${
-                      bottleneckResult.percentage <= 5 ? "bg-emerald-400" : bottleneckResult.percentage <= 15 ? "bg-amber-400" : "bg-red-400"
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-zinc-400">
+                İşlemci (CPU)
+              </label>
+
+              <select
+                value={cpuId ?? ""}
+                onChange={(e) => {
+                  setCpuId(
+                    Number(e.target.value)
+                  );
+                  setResult(null);
+                }}
+                className="w-full p-3.5 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none focus:border-cyan-500/50"
+              >
+                {cpus.map((item) => (
+                  <option
+                    key={item.id}
+                    value={item.id}
+                  >
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-zinc-400 flex items-center gap-1.5">
+                <Monitor size={14} />
+                Ekran Kartı (GPU)
+              </label>
+
+              <select
+                value={gpuId ?? ""}
+                onChange={(e) => {
+                  setGpuId(
+                    Number(e.target.value)
+                  );
+                  setResult(null);
+                }}
+                className="w-full p-3.5 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none focus:border-cyan-500/50"
+              >
+                {gpus.map((item) => (
+                  <option
+                    key={item.id}
+                    value={item.id}
+                  >
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-zinc-400">
+                Çözünürlük
+              </label>
+
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    "1080p",
+                    "1440p",
+                    "4K",
+                  ] as Resolution[]
+                ).map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => {
+                      setResolution(item);
+                      setResult(null);
+                    }}
+                    className={`py-3 rounded-xl border text-sm font-bold transition-all ${
+                      resolution === item
+                        ? "border-cyan-500 bg-cyan-500/10 text-cyan-400"
+                        : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
                     }`}
-                    style={{ width: `${Math.min(100, bottleneckResult.percentage * 3)}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-2xl flex flex-col gap-2">
-                <span className="text-xs font-bold text-zinc-300">Uzman Değerlendirmesi ({resolution}):</span>
-                <p className="text-xs text-zinc-400 leading-relaxed">{bottleneckResult.description}</p>
+                  >
+                    {item}
+                  </button>
+                ))}
               </div>
             </div>
-          )}
+
+            <button
+              onClick={handleCalculate}
+              disabled={
+                !selectedCpu ||
+                !selectedGpu
+              }
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-cyan-500 text-zinc-950 font-black text-sm disabled:opacity-40"
+            >
+              DARBOĞAZI ANALİZ ET
+            </button>
+          </div>
+
+          <div className="lg:col-span-7 min-h-[430px] p-7 rounded-3xl border border-zinc-800 bg-zinc-900/60 flex items-center justify-center">
+            {!result ? (
+              <div className="text-center max-w-sm">
+                <Activity
+                  size={35}
+                  className="mx-auto text-zinc-700 mb-3"
+                />
+
+                <p className="text-sm text-zinc-500">
+                  İşlemci, ekran kartı ve
+                  çözünürlüğü seçip analizi
+                  başlat.
+                </p>
+              </div>
+            ) : (
+              <div className="w-full flex flex-col gap-5">
+                <div
+                  className={`p-6 rounded-2xl border ${resultClasses}`}
+                >
+                  <div className="flex items-start gap-3">
+                    {result.status ===
+                    "good" ? (
+                      <ShieldCheck
+                        size={22}
+                        className="text-emerald-400 shrink-0"
+                      />
+                    ) : (
+                      <AlertTriangle
+                        size={22}
+                        className={
+                          result.status ===
+                          "high"
+                            ? "text-red-400 shrink-0"
+                            : "text-amber-400 shrink-0"
+                        }
+                      />
+                    )}
+
+                    <div>
+                      <h2 className="text-lg font-black text-white">
+                        {result.title}
+                      </h2>
+
+                      <p className="text-sm text-zinc-400 mt-2 leading-6">
+                        {result.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-950">
+                    <div className="text-[11px] text-zinc-500">
+                      Tahmini risk
+                    </div>
+
+                    <div className="text-3xl font-black text-cyan-400 mt-1">
+                      %{result.risk}
+                    </div>
+                  </div>
+
+                  <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-950">
+                    <div className="text-[11px] text-zinc-500">
+                      Çözünürlük
+                    </div>
+
+                    <div className="text-3xl font-black text-white mt-1">
+                      {resolution}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-950 space-y-3">
+                  <div className="flex justify-between gap-4 text-xs">
+                    <span className="text-zinc-500">
+                      İşlemci
+                    </span>
+
+                    <span className="text-white font-bold text-right">
+                      {selectedCpu?.name}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between gap-4 text-xs">
+                    <span className="text-zinc-500">
+                      Ekran Kartı
+                    </span>
+
+                    <span className="text-white font-bold text-right">
+                      {selectedGpu?.name}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between gap-4 text-xs">
+                    <span className="text-zinc-500">
+                      CPU çekirdek
+                    </span>
+
+                    <span className="text-zinc-300 font-bold">
+                      {selectedCpu
+                        ? parseCpuCores(
+                            selectedCpu
+                          )
+                        : "-"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between gap-4 text-xs">
+                    <span className="text-zinc-500">
+                      GPU VRAM
+                    </span>
+
+                    <span className="text-zinc-300 font-bold">
+                      {selectedGpu
+                        ? `${parseVram(
+                            selectedGpu
+                          )} GB`
+                        : "-"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-[11px] leading-5 text-amber-200/80">
+                  Bu araç tahmini denge analizi yapar.
+                  Gerçek darboğaz; oyun, grafik ayarı,
+                  sürücü, RAM ve arka plan yüküne göre
+                  değişebilir.
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

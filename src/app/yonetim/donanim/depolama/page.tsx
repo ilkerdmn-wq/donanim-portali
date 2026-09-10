@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -13,6 +13,7 @@ import {
   X,
   Loader2,
   Database,
+  ArrowUpDown,
 } from "lucide-react";
 
 import { supabase } from "../../../lib/supabase";
@@ -24,13 +25,7 @@ type HardwareItem = {
   name: string;
   price: number;
   description: string | null;
-  specs: {
-    Kapasite?: string;
-    Tür?: string;
-    Okuma?: string;
-    Yazma?: string;
-    Arayüz?: string;
-  } | null;
+  specs: Record<string, any> | null;
 };
 
 const emptyForm = {
@@ -44,9 +39,54 @@ const emptyForm = {
   interfaceType: "",
 };
 
+type SortOption =
+  | "name-asc"
+  | "name-desc"
+  | "price-asc"
+  | "price-desc";
+
+function getSpec(
+  specs: Record<string, any> | null | undefined,
+  keys: string[]
+) {
+  if (!specs) return "";
+
+  for (const key of keys) {
+    const value = specs[key];
+
+    if (
+      value !== undefined &&
+      value !== null &&
+      String(value).trim() !== ""
+    ) {
+      return String(value);
+    }
+  }
+
+  const normalizedKeys = keys.map((key) =>
+    key.toLocaleLowerCase("tr-TR")
+  );
+
+  for (const [key, value] of Object.entries(specs)) {
+    if (
+      normalizedKeys.includes(
+        key.toLocaleLowerCase("tr-TR")
+      ) &&
+      value !== undefined &&
+      value !== null
+    ) {
+      return String(value);
+    }
+  }
+
+  return "";
+}
+
 export default function DepolamaYonetimPage() {
   const [items, setItems] = useState<HardwareItem[]>([]);
   const [search, setSearch] = useState("");
+  const [sortOption, setSortOption] =
+    useState<SortOption>("name-asc");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -112,11 +152,28 @@ export default function DepolamaYonetimPage() {
       name: item.name || "",
       price: String(item.price || ""),
       description: item.description || "",
-      capacity: item.specs?.Kapasite || "",
-      type: item.specs?.Tür || "",
-      readSpeed: item.specs?.Okuma || "",
-      writeSpeed: item.specs?.Yazma || "",
-      interfaceType: item.specs?.Arayüz || "",
+      capacity: getSpec(item.specs, [
+        "Kapasite",
+        "kapasite",
+      ]),
+      type: getSpec(item.specs, [
+        "Tür",
+        "tür",
+        "Protokol",
+        "protokol",
+      ]),
+      readSpeed: getSpec(item.specs, [
+        "Okuma",
+        "okuma",
+      ]),
+      writeSpeed: getSpec(item.specs, [
+        "Yazma",
+        "yazma",
+      ]),
+      interfaceType: getSpec(item.specs, [
+        "Arayüz",
+        "arayüz",
+      ]),
     });
 
     setShowForm(true);
@@ -214,9 +271,88 @@ export default function DepolamaYonetimPage() {
     await loadItems();
   };
 
-  const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredItems = useMemo(() => {
+    const q = search
+      .trim()
+      .toLocaleLowerCase("tr-TR");
+
+    const filtered = !q
+      ? [...items]
+      : items.filter((item) => {
+          const capacity = getSpec(item.specs, [
+            "Kapasite",
+            "kapasite",
+          ]);
+
+          const type = getSpec(item.specs, [
+            "Tür",
+            "tür",
+            "Protokol",
+            "protokol",
+          ]);
+
+          const readSpeed = getSpec(item.specs, [
+            "Okuma",
+            "okuma",
+          ]);
+
+          const writeSpeed = getSpec(item.specs, [
+            "Yazma",
+            "yazma",
+          ]);
+
+          const interfaceType = getSpec(item.specs, [
+            "Arayüz",
+            "arayüz",
+          ]);
+
+          return (
+            item.name
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            capacity
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            type
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            readSpeed
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            writeSpeed
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            interfaceType
+              .toLocaleLowerCase("tr-TR")
+              .includes(q)
+          );
+        });
+
+    return filtered.sort((a, b) => {
+      switch (sortOption) {
+        case "name-desc":
+          return b.name.localeCompare(
+            a.name,
+            "tr",
+            { sensitivity: "base" }
+          );
+
+        case "price-asc":
+          return Number(a.price || 0) - Number(b.price || 0);
+
+        case "price-desc":
+          return Number(b.price || 0) - Number(a.price || 0);
+
+        case "name-asc":
+        default:
+          return a.name.localeCompare(
+            b.name,
+            "tr",
+            { sensitivity: "base" }
+          );
+      }
+    });
+  }, [items, search, sortOption]);
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -505,19 +641,53 @@ export default function DepolamaYonetimPage() {
 
             </div>
 
-            <div className="relative w-full md:w-[300px]">
+            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
 
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600"
-              />
+              <div className="relative w-full sm:w-[260px]">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600"
+                />
 
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Depolama ürünü ara..."
-                className="w-full h-10 pl-10 pr-4 rounded-xl border border-zinc-800 bg-zinc-950 text-xs text-white outline-none"
-              />
+                <input
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
+                  placeholder="Depolama ürünü ara..."
+                  className="w-full h-10 pl-10 pr-4 rounded-xl border border-zinc-800 bg-zinc-950 text-xs text-white outline-none focus:border-cyan-500/50"
+                />
+              </div>
+
+              <div className="relative w-full sm:w-[220px]">
+                <ArrowUpDown
+                  size={15}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400 pointer-events-none"
+                />
+
+                <select
+                  value={sortOption}
+                  onChange={(e) =>
+                    setSortOption(
+                      e.target.value as SortOption
+                    )
+                  }
+                  className="w-full h-10 pl-9 pr-3 rounded-xl border border-zinc-800 bg-zinc-950 text-xs font-bold text-zinc-300 outline-none cursor-pointer hover:border-cyan-500/30 focus:border-cyan-500/50"
+                >
+                  <option value="name-asc">
+                    Ada göre A → Z
+                  </option>
+                  <option value="name-desc">
+                    Ada göre Z → A
+                  </option>
+                  <option value="price-asc">
+                    Fiyat: Düşük → Yüksek
+                  </option>
+                  <option value="price-desc">
+                    Fiyat: Yüksek → Düşük
+                  </option>
+                </select>
+              </div>
 
             </div>
 
@@ -582,7 +752,10 @@ export default function DepolamaYonetimPage() {
                         </h3>
 
                         <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                          {item.specs?.Kapasite || "-"}
+                          {getSpec(item.specs, [
+                            "Kapasite",
+                            "kapasite",
+                          ]) || "-"}
                         </span>
 
                       </div>
@@ -594,19 +767,33 @@ export default function DepolamaYonetimPage() {
                       <div className="flex flex-wrap gap-2 mt-3">
 
                         <span className="text-[10px] px-2 py-1 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-400">
-                          Tür: {item.specs?.Tür || "-"}
+                          Tür: {getSpec(item.specs, [
+                            "Tür",
+                            "tür",
+                            "Protokol",
+                            "protokol",
+                          ]) || "-"}
                         </span>
 
                         <span className="text-[10px] px-2 py-1 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-400">
-                          Okuma: {item.specs?.Okuma || "-"}
+                          Okuma: {getSpec(item.specs, [
+                            "Okuma",
+                            "okuma",
+                          ]) || "-"}
                         </span>
 
                         <span className="text-[10px] px-2 py-1 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-400">
-                          Yazma: {item.specs?.Yazma || "-"}
+                          Yazma: {getSpec(item.specs, [
+                            "Yazma",
+                            "yazma",
+                          ]) || "-"}
                         </span>
 
                         <span className="text-[10px] px-2 py-1 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-400">
-                          Arayüz: {item.specs?.Arayüz || "-"}
+                          Arayüz: {getSpec(item.specs, [
+                            "Arayüz",
+                            "arayüz",
+                          ]) || "-"}
                         </span>
 
                       </div>

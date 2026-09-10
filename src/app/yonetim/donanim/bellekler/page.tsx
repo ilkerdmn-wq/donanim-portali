@@ -13,6 +13,7 @@ import {
   X,
   Save,
   Loader2,
+  ArrowUpDown,
 } from "lucide-react";
 
 import { supabase } from "../../../lib/supabase";
@@ -38,6 +39,12 @@ type FormState = {
   speed: string;
   latency: string;
 };
+
+type SortOption =
+  | "name-asc"
+  | "name-desc"
+  | "price-asc"
+  | "price-desc";
 
 const emptyForm: FormState = {
   name: "",
@@ -106,6 +113,8 @@ export default function MemoryManagementPage() {
   const [saving, setSaving] = useState(false);
 
   const [search, setSearch] = useState("");
+  const [sortOption, setSortOption] =
+    useState<SortOption>("name-asc");
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] =
@@ -152,48 +161,83 @@ export default function MemoryManagementPage() {
       .trim()
       .toLocaleLowerCase("tr-TR");
 
-    if (!q) {
-      return items;
-    }
+    const filtered = !q
+      ? [...items]
+      : items.filter((item) => {
+          const capacity = getSpec(item.specs, [
+            "Kapasite",
+            "kapasite",
+          ]);
 
-    return items.filter((item) => {
-      const capacity = getSpec(item.specs, [
-        "Kapasite",
-        "kapasite",
-      ]);
+          const type = getSpec(item.specs, [
+            "Tür",
+            "tür",
+            "Tip",
+            "tip",
+            "Bellek Türü",
+            "bellek türü",
+          ]);
 
-      const type = getSpec(item.specs, [
-        "Tür",
-        "tür",
-        "Tip",
-        "tip",
-        "Bellek Türü",
-        "bellek türü",
-      ]);
+          const speed = getSpec(item.specs, [
+            "Hız",
+            "hız",
+            "Frekans",
+            "frekans",
+          ]);
 
-      const speed = getSpec(item.specs, [
-        "Hız",
-        "hız",
-        "Frekans",
-        "frekans",
-      ]);
+          const latency = getSpec(item.specs, [
+            "Gecikme",
+            "gecikme",
+            "CL",
+            "cl",
+            "CAS",
+            "cas",
+          ]);
 
-      return (
-        item.name
-          .toLocaleLowerCase("tr-TR")
-          .includes(q) ||
-        capacity
-          .toLocaleLowerCase("tr-TR")
-          .includes(q) ||
-        type
-          .toLocaleLowerCase("tr-TR")
-          .includes(q) ||
-        speed
-          .toLocaleLowerCase("tr-TR")
-          .includes(q)
-      );
+          return (
+            item.name
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            capacity
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            type
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            speed
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            latency
+              .toLocaleLowerCase("tr-TR")
+              .includes(q)
+          );
+        });
+
+    return filtered.sort((a, b) => {
+      switch (sortOption) {
+        case "name-desc":
+          return b.name.localeCompare(
+            a.name,
+            "tr",
+            { sensitivity: "base" }
+          );
+
+        case "price-asc":
+          return Number(a.price || 0) - Number(b.price || 0);
+
+        case "price-desc":
+          return Number(b.price || 0) - Number(a.price || 0);
+
+        case "name-asc":
+        default:
+          return a.name.localeCompare(
+            b.name,
+            "tr",
+            { sensitivity: "base" }
+          );
+      }
     });
-  }, [items, search]);
+  }, [items, search, sortOption]);
 
   const openNewModal = () => {
     setEditingItem(null);
@@ -295,7 +339,7 @@ export default function MemoryManagementPage() {
       Kapasite: form.capacity.trim(),
       Tür: form.type.trim(),
       Hız: form.speed.trim(),
-      Gecikme: form.latency.trim(),
+      CAS: form.latency.trim(),
     };
 
     setSaving(true);
@@ -443,20 +487,52 @@ export default function MemoryManagementPage() {
               </p>
             </div>
 
-            <div className="relative w-full md:w-[300px]">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600"
-              />
+            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+              <div className="relative w-full sm:w-[260px]">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600"
+                />
 
-              <input
-                value={search}
-                onChange={(e) =>
-                  setSearch(e.target.value)
-                }
-                placeholder="Bellek ara..."
-                className="w-full h-11 pl-10 pr-4 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none focus:border-cyan-500/50"
-              />
+                <input
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
+                  placeholder="Bellek ara..."
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none focus:border-cyan-500/50"
+                />
+              </div>
+
+              <div className="relative w-full sm:w-[220px]">
+                <ArrowUpDown
+                  size={15}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400 pointer-events-none"
+                />
+
+                <select
+                  value={sortOption}
+                  onChange={(e) =>
+                    setSortOption(
+                      e.target.value as SortOption
+                    )
+                  }
+                  className="w-full h-11 pl-9 pr-3 rounded-xl border border-zinc-800 bg-zinc-950 text-xs font-bold text-zinc-300 outline-none cursor-pointer hover:border-cyan-500/30 focus:border-cyan-500/50"
+                >
+                  <option value="name-asc">
+                    Ada göre A → Z
+                  </option>
+                  <option value="name-desc">
+                    Ada göre Z → A
+                  </option>
+                  <option value="price-asc">
+                    Fiyat: Düşük → Yüksek
+                  </option>
+                  <option value="price-desc">
+                    Fiyat: Yüksek → Düşük
+                  </option>
+                </select>
+              </div>
             </div>
           </div>
 

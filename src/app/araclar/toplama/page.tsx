@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -11,75 +11,157 @@ import {
   ShieldCheck,
   Trash2,
   Plus,
+  Loader2,
 } from "lucide-react";
 
-import {
-  hardwareData,
-  HardwareItem as BaseHardwareItem,
-} from "@/data/hardwareData";
+import type { PricedHardwareItem } from "@/app/lib/hardware-types";
 
-type HardwareItem = BaseHardwareItem & {
-  brand?: string | null;
-  description?: string | null;
+type SelectedParts = {
+  islemci?: PricedHardwareItem;
+  "ekran-karti"?: PricedHardwareItem;
+  anakart?: PricedHardwareItem;
+  ram?: PricedHardwareItem;
+  psu?: PricedHardwareItem;
+  ssd?: PricedHardwareItem;
 };
 
+const categories = [
+  {
+    id: "islemci",
+    dbCategory: "islemciler",
+    name: "İşlemci (CPU)",
+    icon: Cpu,
+  },
+  {
+    id: "ekran-karti",
+    dbCategory: "ekran-kartlari",
+    name: "Ekran Kartı (GPU)",
+    icon: Monitor,
+  },
+  {
+    id: "anakart",
+    dbCategory: "anakartlar",
+    name: "Anakart",
+    icon: ShieldCheck,
+  },
+  {
+    id: "ram",
+    dbCategory: "bellekler",
+    name: "Bellek (RAM)",
+    icon: Zap,
+  },
+  {
+    id: "psu",
+    dbCategory: "guc-kaynaklari",
+    name: "Güç Kaynağı (PSU)",
+    icon: Zap,
+  },
+  {
+    id: "ssd",
+    dbCategory: "depolama",
+    name: "Depolama (SSD)",
+    icon: HardDrive,
+  },
+];
+
 export default function PcToplamaPage() {
-  const [selectedParts, setSelectedParts] = useState<{
-    islemci?: HardwareItem;
-    "ekran-karti"?: HardwareItem;
-    anakart?: HardwareItem;
-    ram?: HardwareItem;
-    psu?: HardwareItem;
-    ssd?: HardwareItem;
-  }>({});
+  const [selectedParts, setSelectedParts] =
+    useState<SelectedParts>({});
 
   const [activeCategory, setActiveCategory] =
     useState<string | null>(null);
 
-  const categories = [
-    {
-      id: "islemci",
-      name: "İşlemci (CPU)",
-      icon: Cpu,
-    },
-    {
-      id: "ekran-karti",
-      name: "Ekran Kartı (GPU)",
-      icon: Monitor,
-    },
-    {
-      id: "anakart",
-      name: "Anakart",
-      icon: ShieldCheck,
-    },
-    {
-      id: "ram",
-      name: "Bellek (RAM)",
-      icon: Zap,
-    },
-    {
-      id: "psu",
-      name: "Güç Kaynağı (PSU)",
-      icon: Zap,
-    },
-    {
-      id: "ssd",
-      name: "Depolama (SSD)",
-      icon: HardDrive,
-    },
-  ];
+  const [hardwareData, setHardwareData] = useState<
+    Record<string, PricedHardwareItem[]>
+  >({});
+
+  const [loadingHardware, setLoadingHardware] =
+    useState(true);
+
+  const [loadError, setLoadError] =
+    useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadHardware() {
+      try {
+        setLoadingHardware(true);
+        setLoadError(null);
+
+        const response = await fetch(
+          "/api/hardware/available",
+          { cache: "no-store" }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(
+            result.error || "Donanımlar yüklenemedi."
+          );
+        }
+
+        const grouped: Record<
+          string,
+          PricedHardwareItem[]
+        > = {};
+
+        for (const category of categories) {
+          grouped[category.id] = [];
+        }
+
+        for (
+          const item of result.items as PricedHardwareItem[]
+        ) {
+          if (!item.has_valid_price) continue;
+          if (item.current_price == null) continue;
+
+          const matchedCategory = categories.find(
+            (cat) => cat.dbCategory === item.category
+          );
+
+          if (!matchedCategory) continue;
+
+          grouped[matchedCategory.id].push(item);
+        }
+
+        for (const key of Object.keys(grouped)) {
+          grouped[key].sort((a, b) =>
+            a.name.localeCompare(b.name, "tr", {
+              sensitivity: "base",
+            })
+          );
+        }
+
+        setHardwareData(grouped);
+      } catch (error: any) {
+        console.error(
+          "Donanımlar yüklenemedi:",
+          error
+        );
+
+        setLoadError(
+          error?.message ||
+            "Donanımlar yüklenemedi."
+        );
+      } finally {
+        setLoadingHardware(false);
+      }
+    }
+
+    loadHardware();
+  }, []);
 
   const totalPrice = Object.values(
     selectedParts
   ).reduce(
     (acc, item) =>
-      acc + (item?.price || 0),
+      acc + Number(item?.current_price || 0),
     0
   );
 
   const handleSelectPart = (
     category: string,
-    item: HardwareItem
+    item: PricedHardwareItem
   ) => {
     setSelectedParts((prev) => ({
       ...prev,
@@ -93,9 +175,7 @@ export default function PcToplamaPage() {
     category: string
   ) => {
     setSelectedParts((prev) => {
-      const copy = {
-        ...prev,
-      };
+      const copy = { ...prev };
 
       delete copy[
         category as keyof typeof copy
@@ -103,6 +183,16 @@ export default function PcToplamaPage() {
 
       return copy;
     });
+  };
+
+  const formatPrice = (
+    price: number | null | undefined
+  ) => {
+    if (price == null) return "-";
+
+    return `${Math.round(
+      Number(price)
+    ).toLocaleString("tr-TR")} ₺`;
   };
 
   return (
@@ -120,184 +210,198 @@ export default function PcToplamaPage() {
           <span className="text-cyan-400">
             📊
           </span>
-
           PC Toplama ve Karşılaştırma Sihirbazı
         </h1>
 
         <p className="text-zinc-400 text-sm">
-          Parçaları birleştirin, toplam bütçeyi görün ve sistem
-          uyumluluğunu test edin.
+          Parçaları birleştirin, toplam bütçeyi
+          görün ve sistem uyumluluğunu test edin.
+        </p>
+
+        <p className="text-zinc-500 text-xs">
+          Inventus dahil yalnızca güncel fiyatı
+          doğrulanmış ürünler listelenir.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* SOL ALAN */}
+      {loadingHardware && (
+        <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center gap-3 text-zinc-400">
+          <Loader2
+            size={18}
+            className="animate-spin text-cyan-400"
+          />
+          Güncel donanımlar yükleniyor...
+        </div>
+      )}
 
-        <div className="lg:col-span-8 flex flex-col gap-4">
-          <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl flex flex-col gap-4 shadow-sm">
-            <h2 className="text-base font-bold text-white tracking-wide border-b border-zinc-800 pb-3">
-              Sistem Bileşenleri
-            </h2>
+      {loadError && (
+        <div className="p-5 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-300 text-sm">
+          {loadError}
+        </div>
+      )}
 
-            <div className="flex flex-col gap-3">
-              {categories.map((cat) => {
-                const Icon = cat.icon;
+      {!loadingHardware && !loadError && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-8 flex flex-col gap-4">
+            <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl flex flex-col gap-4 shadow-sm">
+              <h2 className="text-base font-bold text-white tracking-wide border-b border-zinc-800 pb-3">
+                Sistem Bileşenleri
+              </h2>
 
-                const selected =
-                  selectedParts[
-                    cat.id as keyof typeof selectedParts
-                  ];
+              <div className="flex flex-col gap-3">
+                {categories.map((cat) => {
+                  const Icon = cat.icon;
 
-                return (
-                  <div
-                    key={cat.id}
-                    className="p-4 bg-zinc-950 border border-zinc-800/80 rounded-2xl flex items-center justify-between gap-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-cyan-400">
-                        <Icon size={18} />
-                      </div>
+                  const selected =
+                    selectedParts[
+                      cat.id as keyof SelectedParts
+                    ];
 
-                      <div>
-                        <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                          {cat.name}
-                        </span>
+                  const availableCount =
+                    hardwareData[cat.id]?.length ??
+                    0;
 
-                        {selected ? (
-                          <h4 className="text-sm font-bold text-white">
-                            {selected.name}
-                          </h4>
-                        ) : (
-                          <p className="text-xs text-zinc-600 italic">
-                            Seçim yapılmadı
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                  return (
+                    <div
+                      key={cat.id}
+                      className="p-4 bg-zinc-950 border border-zinc-800/80 rounded-2xl flex items-center justify-between gap-4"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-cyan-400 shrink-0">
+                          <Icon size={18} />
+                        </div>
 
-                    <div className="flex items-center gap-4">
-                      {selected ? (
-                        <>
-                          <span className="text-sm font-extrabold text-cyan-400">
-                            {selected.price.toLocaleString(
-                              "tr-TR"
-                            )}{" "}
-                            ₺
+                        <div className="min-w-0">
+                          <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                            {cat.name}
                           </span>
 
+                          {selected ? (
+                            <h4 className="text-sm font-bold text-white truncate">
+                              {selected.name}
+                            </h4>
+                          ) : (
+                            <p className="text-xs text-zinc-600 italic">
+                              {availableCount > 0
+                                ? `${availableCount} güncel ürün mevcut`
+                                : "Güncel fiyatlı ürün bulunamadı"}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 shrink-0">
+                        {selected ? (
+                          <>
+                            <span className="text-sm font-extrabold text-cyan-400">
+                              {formatPrice(
+                                selected.current_price
+                              )}
+                            </span>
+
+                            <button
+                              onClick={() =>
+                                handleRemovePart(
+                                  cat.id
+                                )
+                              }
+                              className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                              title="Parçayı Kaldır"
+                            >
+                              <Trash2
+                                size={16}
+                              />
+                            </button>
+                          </>
+                        ) : (
                           <button
+                            disabled={
+                              availableCount === 0
+                            }
                             onClick={() =>
-                              handleRemovePart(
+                              setActiveCategory(
                                 cat.id
                               )
                             }
-                            className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
-                            title="Parçayı Kaldır"
+                            className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
                           >
-                            <Trash2
-                              size={16}
-                            />
+                            <Plus size={14} />
+                            Parça Seç
                           </button>
-                        </>
-                      ) : (
-                        <button
-                          onClick={() =>
-                            setActiveCategory(
-                              cat.id
-                            )
-                          }
-                          className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5"
-                        >
-                          <Plus size={14} />
-                          Parça Seç
-                        </button>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl flex flex-col gap-6 shadow-sm sticky top-24">
+              <h3 className="text-base font-bold text-white border-b border-zinc-800 pb-3">
+                Sistem Özeti
+              </h3>
+
+              <div className="flex flex-col gap-3 text-xs">
+                <div className="flex justify-between text-zinc-400">
+                  <span>
+                    Eklenen Parça Sayısı:
+                  </span>
+
+                  <span className="text-white font-bold">
+                    {
+                      Object.keys(
+                        selectedParts
+                      ).length
+                    }{" "}
+                    / 6
+                  </span>
+                </div>
+
+                <div className="flex justify-between text-zinc-400">
+                  <span>Fiyat Durumu:</span>
+                  <span className="text-emerald-400 font-bold">
+                    Güncel fiyatlar
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1 pt-4 border-t border-zinc-800">
+                <span className="text-xs text-zinc-400 font-semibold">
+                  TOPLAM TUTAR
+                </span>
+
+                <span className="text-2xl font-extrabold text-cyan-400">
+                  {formatPrice(totalPrice)}
+                </span>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* SAĞ ALAN */}
-
-        <div className="lg:col-span-4 flex flex-col gap-4">
-          <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl flex flex-col gap-6 shadow-sm sticky top-24">
-            <h3 className="text-base font-bold text-white border-b border-zinc-800 pb-3">
-              Sistem Özeti
-            </h3>
-
-            <div className="flex flex-col gap-3 text-xs">
-              <div className="flex justify-between text-zinc-400">
-                <span>
-                  Eklenen Parça Sayısı:
-                </span>
-
-                <span className="text-white font-bold">
-                  {
-                    Object.keys(
-                      selectedParts
-                    ).length
-                  }{" "}
-                  / 6
-                </span>
-              </div>
-
-              <div className="flex justify-between text-zinc-400">
-                <span>
-                  Uyumluluk Durumu:
-                </span>
-
-                <span className="text-emerald-400 font-bold">
-                  Sorunsuz (Uyumlu)
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1 pt-4 border-t border-zinc-800">
-              <span className="text-xs text-zinc-400 font-semibold">
-                TOPLAM TUTAR
-              </span>
-
-              <span className="text-2xl font-extrabold text-cyan-400">
-                {totalPrice.toLocaleString(
-                  "tr-TR"
-                )}{" "}
-                ₺
-              </span>
-            </div>
-
-            <button
-              disabled={
-                Object.keys(
-                  selectedParts
-                ).length === 0
-              }
-              className="w-full py-3.5 bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-300 hover:to-cyan-400 disabled:opacity-50 text-zinc-950 font-bold rounded-2xl transition-all shadow-lg text-sm tracking-wide"
-            >
-              Sistemi Kaydet ve Paylaş
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* PARÇA SEÇİM MODALI */}
+      )}
 
       {activeCategory && (
         <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white capitalize">
-                {
-                  categories.find(
-                    (c) =>
-                      c.id ===
-                      activeCategory
-                  )?.name
-                }{" "}
-                Seçimi
-              </h3>
+              <div>
+                <h3 className="text-lg font-bold text-white">
+                  {
+                    categories.find(
+                      (c) =>
+                        c.id ===
+                        activeCategory
+                    )?.name
+                  }{" "}
+                  Seçimi
+                </h3>
+
+                <p className="text-xs text-zinc-500 mt-1">
+                  Yalnızca güncel fiyatı
+                  doğrulanmış ürünler gösteriliyor.
+                </p>
+              </div>
 
               <button
                 onClick={() =>
@@ -323,34 +427,36 @@ export default function PcToplamaPage() {
                       item
                     )
                   }
-                  className="p-4 bg-zinc-950 border border-zinc-800 hover:border-cyan-500/50 rounded-2xl cursor-pointer transition-all flex justify-between items-center group"
+                  className="p-4 bg-zinc-950 border border-zinc-800 hover:border-cyan-500/50 rounded-2xl cursor-pointer transition-all flex justify-between items-center gap-4 group"
                 >
-                  <div className="flex flex-col gap-1">
-                    {item.brand && (
-                      <span className="text-[10px] text-cyan-400 font-semibold">
-                        {item.brand}
-                      </span>
-                    )}
-
+                  <div className="flex flex-col gap-1 min-w-0">
                     <h4 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
                       {item.name}
                     </h4>
 
                     {item.description && (
-                      <p className="text-[11px] text-zinc-400">
+                      <p className="text-[11px] text-zinc-400 line-clamp-2">
                         {
                           item.description
                         }
                       </p>
                     )}
+
+                    {item.current_price_source && (
+                      <span className="text-[10px] text-zinc-600">
+                        Kaynak:{" "}
+                        {
+                          item.current_price_source
+                        }
+                      </span>
+                    )}
                   </div>
 
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex flex-col items-end gap-2 shrink-0">
                     <span className="text-sm font-extrabold text-cyan-400">
-                      {item.price.toLocaleString(
-                        "tr-TR"
-                      )}{" "}
-                      ₺
+                      {formatPrice(
+                        item.current_price
+                      )}
                     </span>
 
                     <span className="px-3 py-1 bg-cyan-500/10 text-cyan-400 text-[11px] font-bold rounded-xl group-hover:bg-cyan-500 group-hover:text-zinc-950 transition-all">
@@ -359,6 +465,17 @@ export default function PcToplamaPage() {
                   </div>
                 </div>
               ))}
+
+              {(
+                hardwareData[
+                  activeCategory
+                ]?.length ?? 0
+              ) === 0 && (
+                <div className="py-12 text-center text-zinc-500 text-sm">
+                  Bu kategoride güncel fiyatı
+                  doğrulanmış ürün bulunamadı.
+                </div>
+              )}
             </div>
           </div>
         </div>

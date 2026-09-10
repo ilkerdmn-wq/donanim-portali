@@ -12,19 +12,34 @@ import {
   Zap,
   HardDrive,
   Loader2,
+  ArrowUpDown,
 } from "lucide-react";
 
 import { supabase } from "../../lib/supabase";
+import { useSiteSettings } from "@/app/components/SiteSettingsProvider";
 
 type HardwareItem = {
   id: number;
   slug: string;
   category: string;
   name: string;
-  price: number;
+
+  price: number | null;
+
   description: string | null;
   specs: Record<string, string> | null;
+
+  current_price: number | null;
+  current_price_source: string | null;
+  price_checked_at: string | null;
+  has_valid_price: boolean;
 };
+
+type SortOption =
+  | "name-asc"
+  | "name-desc"
+  | "price-asc"
+  | "price-desc";
 
 const categoryInfo: Record<
   string,
@@ -79,12 +94,16 @@ const categoryInfo: Record<
 
 export default function HardwareCategoryPage() {
   const params = useParams();
+  const { settings } = useSiteSettings();
 
   const category = String(params.category || "");
 
   const [items, setItems] = useState<HardwareItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const [sortOption, setSortOption] =
+    useState<SortOption>("name-asc");
 
   const info = categoryInfo[category];
 
@@ -94,15 +113,24 @@ export default function HardwareCategoryPage() {
     loadItems();
   }, [category]);
 
+  useEffect(() => {
+    if (
+      !settings.showPrices &&
+      (sortOption === "price-asc" ||
+        sortOption === "price-desc")
+    ) {
+      setSortOption("name-asc");
+    }
+  }, [settings.showPrices, sortOption]);
+
   const loadItems = async () => {
     setLoading(true);
     setErrorMessage("");
 
     const { data, error } = await supabase
-      .from("hardware_items")
+      .from("hardware_items_with_price")
       .select("*")
-      .eq("category", category)
-      .order("price", { ascending: true });
+      .eq("category", category);
 
     if (error) {
       console.error(error);
@@ -114,6 +142,94 @@ export default function HardwareCategoryPage() {
     setItems((data || []) as HardwareItem[]);
     setLoading(false);
   };
+
+  const formatPrice = (item: HardwareItem) => {
+    if (
+      !item.has_valid_price ||
+      item.current_price == null
+    ) {
+      return "-";
+    }
+
+    return `${Math.round(
+      Number(item.current_price)
+    ).toLocaleString("tr-TR")} ₺`;
+  };
+
+  const sortedItems = [...items].sort((a, b) => {
+    switch (sortOption) {
+      case "name-desc":
+        return b.name.localeCompare(
+          a.name,
+          "tr",
+          {
+            sensitivity: "base",
+          }
+        );
+
+      case "price-asc": {
+        const priceA =
+          a.has_valid_price &&
+          a.current_price != null
+            ? Number(a.current_price)
+            : Number.POSITIVE_INFINITY;
+
+        const priceB =
+          b.has_valid_price &&
+          b.current_price != null
+            ? Number(b.current_price)
+            : Number.POSITIVE_INFINITY;
+
+        if (priceA === priceB) {
+          return a.name.localeCompare(
+            b.name,
+            "tr",
+            {
+              sensitivity: "base",
+            }
+          );
+        }
+
+        return priceA - priceB;
+      }
+
+      case "price-desc": {
+        const priceA =
+          a.has_valid_price &&
+          a.current_price != null
+            ? Number(a.current_price)
+            : Number.NEGATIVE_INFINITY;
+
+        const priceB =
+          b.has_valid_price &&
+          b.current_price != null
+            ? Number(b.current_price)
+            : Number.NEGATIVE_INFINITY;
+
+        if (priceA === priceB) {
+          return a.name.localeCompare(
+            b.name,
+            "tr",
+            {
+              sensitivity: "base",
+            }
+          );
+        }
+
+        return priceB - priceA;
+      }
+
+      case "name-asc":
+      default:
+        return a.name.localeCompare(
+          b.name,
+          "tr",
+          {
+            sensitivity: "base",
+          }
+        );
+    }
+  });
 
   if (!info) {
     return (
@@ -155,20 +271,72 @@ export default function HardwareCategoryPage() {
           Kategorilere Dön
         </Link>
 
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-            <Icon size={20} className="text-cyan-400" />
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+              <Icon
+                size={20}
+                className="text-cyan-400"
+              />
+            </div>
+
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-white">
+                {info.title}
+              </h1>
+
+              <p className="text-sm text-zinc-500 mt-1">
+                {info.description}
+              </p>
+            </div>
           </div>
 
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-white">
-              {info.title}
-            </h1>
+          {!loading &&
+            !errorMessage &&
+            items.length > 0 && (
+              <div className="flex items-center gap-2">
 
-            <p className="text-sm text-zinc-500 mt-1">
-              {info.description}
-            </p>
-          </div>
+                <div className="w-9 h-9 rounded-xl border border-zinc-800 bg-zinc-900 flex items-center justify-center">
+                  <ArrowUpDown
+                    size={15}
+                    className="text-cyan-400"
+                  />
+                </div>
+
+                <select
+                  value={sortOption}
+                  onChange={(e) =>
+                    setSortOption(
+                      e.target.value as SortOption
+                    )
+                  }
+                  className="h-9 bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-semibold rounded-xl px-3 outline-none cursor-pointer hover:border-cyan-500/30 focus:border-cyan-500/50 transition-colors"
+                >
+                  <option value="name-asc">
+                    Ada göre A → Z
+                  </option>
+
+                  <option value="name-desc">
+                    Ada göre Z → A
+                  </option>
+
+                  {settings.showPrices && (
+                    <>
+                      <option value="price-asc">
+                        Fiyat: Düşük → Yüksek
+                      </option>
+
+                      <option value="price-desc">
+                        Fiyat: Yüksek → Düşük
+                      </option>
+                    </>
+                  )}
+                </select>
+
+              </div>
+            )}
+
         </div>
 
         {loading ? (
@@ -212,7 +380,7 @@ export default function HardwareCategoryPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            {items.map((item) => (
+            {sortedItems.map((item) => (
 
               <div
                 key={item.id}
@@ -227,37 +395,60 @@ export default function HardwareCategoryPage() {
                     </h2>
                   </div>
 
-                  <span className="shrink-0 text-xs font-black px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                    {Number(item.price).toLocaleString("tr-TR")} ₺
-                  </span>
+                  {settings.showPrices && (
+                    <span
+                      className={`shrink-0 text-xs font-black px-3 py-1.5 rounded-lg border ${
+                        item.has_valid_price &&
+                        item.current_price != null
+                          ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
+                          : "bg-zinc-800/60 text-zinc-500 border-zinc-700"
+                      }`}
+                    >
+                      {formatPrice(item)}
+                    </span>
+                  )}
 
                 </div>
 
                 <p className="text-sm text-zinc-500 leading-6 min-h-[48px]">
-                  {item.description || "Açıklama bulunmuyor."}
+                  {item.description ||
+                    "Açıklama bulunmuyor."}
                 </p>
+
+                {settings.showPriceSource &&
+                  item.has_valid_price &&
+                  item.current_price_source && (
+                    <p className="text-[10px] text-zinc-600 mt-2">
+                      Fiyat kaynağı:{" "}
+                      {item.current_price_source}
+                    </p>
+                  )}
 
                 <div className="border-t border-zinc-800 mt-5 pt-4 space-y-2">
 
                   {item.specs &&
-                    Object.entries(item.specs).map(([key, value]) => (
+                    Object.entries(
+                      item.specs
+                    ).map(
+                      ([key, value]) => (
 
-                      <div
-                        key={key}
-                        className="flex items-center justify-between gap-4"
-                      >
+                        <div
+                          key={key}
+                          className="flex items-center justify-between gap-4"
+                        >
 
-                        <span className="text-xs text-zinc-500">
-                          {key}:
-                        </span>
+                          <span className="text-xs text-zinc-500">
+                            {key}:
+                          </span>
 
-                        <span className="text-xs font-bold text-zinc-300 text-right">
-                          {value || "-"}
-                        </span>
+                          <span className="text-xs font-bold text-zinc-300 text-right">
+                            {value || "-"}
+                          </span>
 
-                      </div>
+                        </div>
 
-                    ))}
+                      )
+                    )}
 
                 </div>
 

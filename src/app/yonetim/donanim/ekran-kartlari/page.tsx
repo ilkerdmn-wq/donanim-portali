@@ -13,6 +13,7 @@ import {
   X,
   Save,
   Loader2,
+  ArrowUpDown,
 } from "lucide-react";
 
 import { supabase } from "../../../lib/supabase";
@@ -39,6 +40,12 @@ type FormState = {
   connection: string;
   usage: string;
 };
+
+type SortOption =
+  | "name-asc"
+  | "name-desc"
+  | "price-asc"
+  | "price-desc";
 
 const emptyForm: FormState = {
   name: "",
@@ -108,6 +115,8 @@ export default function GPUManagementPage() {
   const [saving, setSaving] = useState(false);
 
   const [search, setSearch] = useState("");
+  const [sortOption, setSortOption] =
+    useState<SortOption>("name-asc");
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] =
@@ -154,36 +163,67 @@ export default function GPUManagementPage() {
       .trim()
       .toLocaleLowerCase("tr-TR");
 
-    if (!q) {
-      return items;
-    }
+    const filtered = !q
+      ? [...items]
+      : items.filter((item) => {
+          const vram = getSpec(item.specs, [
+            "VRAM",
+            "vram",
+          ]);
 
-    return items.filter((item) => {
-      const vram = getSpec(item.specs, [
-        "VRAM",
-        "vram",
-      ]);
+          const memoryType = getSpec(item.specs, [
+            "Bellek Türü",
+            "bellek türü",
+            "Bellek",
+            "bellek",
+          ]);
 
-      const memoryType = getSpec(item.specs, [
-        "Bellek Türü",
-        "bellek türü",
-        "Bellek",
-        "bellek",
-      ]);
+          const gpu = getSpec(item.specs, [
+            "GPU",
+            "gpu",
+          ]);
 
-      return (
-        item.name
-          .toLocaleLowerCase("tr-TR")
-          .includes(q) ||
-        vram
-          .toLocaleLowerCase("tr-TR")
-          .includes(q) ||
-        memoryType
-          .toLocaleLowerCase("tr-TR")
-          .includes(q)
-      );
+          return (
+            item.name
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            vram
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            memoryType
+              .toLocaleLowerCase("tr-TR")
+              .includes(q) ||
+            gpu
+              .toLocaleLowerCase("tr-TR")
+              .includes(q)
+          );
+        });
+
+    return filtered.sort((a, b) => {
+      switch (sortOption) {
+        case "name-desc":
+          return b.name.localeCompare(
+            a.name,
+            "tr",
+            { sensitivity: "base" }
+          );
+
+        case "price-asc":
+          return Number(a.price || 0) - Number(b.price || 0);
+
+        case "price-desc":
+          return Number(b.price || 0) - Number(a.price || 0);
+
+        case "name-asc":
+        default:
+          return a.name.localeCompare(
+            b.name,
+            "tr",
+            { sensitivity: "base" }
+          );
+      }
     });
-  }, [items, search]);
+  }, [items, search, sortOption]);
 
   const openNewModal = () => {
     setEditingItem(null);
@@ -213,14 +253,18 @@ export default function GPUManagementPage() {
       ]),
 
       power: getSpec(item.specs, [
-        "Güç Tüketimi",
+        "Önerilen PSU",
+        "önerilen psu",
+        "Önerilen PSU",
         "güç tüketimi",
         "TDP",
         "tdp",
       ]),
 
       connection: getSpec(item.specs, [
-        "Bağlantı",
+        "Arayüz",
+        "arayüz",
+        "Arayüz",
         "bağlantı",
       ]),
 
@@ -283,8 +327,8 @@ export default function GPUManagementPage() {
     const specs = {
       VRAM: form.vram.trim(),
       "Bellek Türü": form.memoryType.trim(),
-      "Güç Tüketimi": form.power.trim(),
-      Bağlantı: form.connection.trim(),
+      "Önerilen PSU": form.power.trim(),
+      Arayüz: form.connection.trim(),
       "Önerilen Kullanım": form.usage.trim(),
     };
 
@@ -431,20 +475,52 @@ export default function GPUManagementPage() {
               </p>
             </div>
 
-            <div className="relative w-full md:w-[300px]">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600"
-              />
+            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+              <div className="relative w-full sm:w-[260px]">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600"
+                />
 
-              <input
-                value={search}
-                onChange={(e) =>
-                  setSearch(e.target.value)
-                }
-                placeholder="Ekran kartı ara..."
-                className="w-full h-11 pl-10 pr-4 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none focus:border-cyan-500/50"
-              />
+                <input
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
+                  placeholder="Ekran kartı ara..."
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-white outline-none focus:border-cyan-500/50"
+                />
+              </div>
+
+              <div className="relative w-full sm:w-[220px]">
+                <ArrowUpDown
+                  size={15}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400 pointer-events-none"
+                />
+
+                <select
+                  value={sortOption}
+                  onChange={(e) =>
+                    setSortOption(
+                      e.target.value as SortOption
+                    )
+                  }
+                  className="w-full h-11 pl-9 pr-3 rounded-xl border border-zinc-800 bg-zinc-950 text-xs font-bold text-zinc-300 outline-none cursor-pointer hover:border-cyan-500/30 focus:border-cyan-500/50"
+                >
+                  <option value="name-asc">
+                    Ada göre A → Z
+                  </option>
+                  <option value="name-desc">
+                    Ada göre Z → A
+                  </option>
+                  <option value="price-asc">
+                    Fiyat: Düşük → Yüksek
+                  </option>
+                  <option value="price-desc">
+                    Fiyat: Yüksek → Düşük
+                  </option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -481,14 +557,18 @@ export default function GPUManagementPage() {
                 ]);
 
                 const power = getSpec(item.specs, [
-                  "Güç Tüketimi",
+                  "Önerilen PSU",
+                  "önerilen psu",
+                  "Önerilen PSU",
                   "güç tüketimi",
                   "TDP",
                   "tdp",
                 ]);
 
                 const connection = getSpec(item.specs, [
-                  "Bağlantı",
+                  "Arayüz",
+                  "arayüz",
+                  "Arayüz",
                   "bağlantı",
                 ]);
 
@@ -535,13 +615,13 @@ export default function GPUManagementPage() {
 
                           {power && (
                             <span className="px-2 py-1 rounded-md border border-zinc-800 bg-zinc-950 text-[9px] text-zinc-400">
-                              Güç: {power}
+                              Önerilen PSU: {power}
                             </span>
                           )}
 
                           {connection && (
                             <span className="px-2 py-1 rounded-md border border-zinc-800 bg-zinc-950 text-[9px] text-zinc-400">
-                              Bağlantı: {connection}
+                              Arayüz: {connection}
                             </span>
                           )}
                         </div>
@@ -732,7 +812,7 @@ export default function GPUManagementPage() {
 
                 <div>
                   <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
-                    Güç Tüketimi
+                    Önerilen PSU
                   </label>
 
                   <input
@@ -743,14 +823,14 @@ export default function GPUManagementPage() {
                         power: e.target.value,
                       }))
                     }
-                    placeholder="200W"
+                    placeholder="650W"
                     className="w-full h-12 mt-2 px-4 rounded-xl border border-zinc-800 bg-zinc-900 text-sm outline-none focus:border-cyan-500/50"
                   />
                 </div>
 
                 <div>
                   <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
-                    Bağlantı
+                    Arayüz
                   </label>
 
                   <input
@@ -762,7 +842,7 @@ export default function GPUManagementPage() {
                           e.target.value,
                       }))
                     }
-                    placeholder="PCIe x16"
+                    placeholder="PCIe 4.0"
                     className="w-full h-12 mt-2 px-4 rounded-xl border border-zinc-800 bg-zinc-900 text-sm outline-none focus:border-cyan-500/50"
                   />
                 </div>
