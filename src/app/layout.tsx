@@ -39,6 +39,11 @@ export const metadata: Metadata = {
       "Z2Mu8qKQpPKFOlm7jrw5OIRQQqmp1KAHLshmrj7T3a4",
   },
 
+  other: {
+    "google-adsense-account":
+      "ca-pub-5297887307944126",
+  },
+
   keywords: [
     "donanım",
     "bilgisayar donanımı",
