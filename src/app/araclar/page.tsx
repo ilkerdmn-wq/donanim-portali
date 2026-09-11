@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 const SITE_URL =
-  "https://donanim-portali.vercel.app";
+  "https://donanimportali.com";
 
 export const metadata: Metadata = {
   title:

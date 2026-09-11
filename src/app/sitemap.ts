@@ -13,7 +13,7 @@ type GuideRow = {
 };
 
 const SITE_URL =
-  "https://donanim-portali.vercel.app";
+  "https://donanimportali.com";
 
 function categoryToSlug(
   category: string

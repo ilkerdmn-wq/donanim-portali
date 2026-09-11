@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    "https://donanim-portali.vercel.app"
+    "https://donanimportali.com"
   ),
 
   title: {
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "tr_TR",
-    url: "https://donanim-portali.vercel.app",
+    url: "https://donanimportali.com",
     siteName: "Donanım Portalı",
     title: "Donanım Portalı",
     description:

@@ -24,7 +24,7 @@ type NewsSeoRow = {
 };
 
 const SITE_URL =
-  "https://donanim-portali.vercel.app";
+  "https://donanimportali.com";
 
 function normalizeParam(
   value: string

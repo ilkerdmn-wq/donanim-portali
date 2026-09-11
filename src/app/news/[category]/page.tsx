@@ -12,7 +12,7 @@ type PageProps = {
 };
 
 const SITE_URL =
-  "https://donanim-portali.vercel.app";
+  "https://donanimportali.com";
 
 const categorySeo: Record<
   string,

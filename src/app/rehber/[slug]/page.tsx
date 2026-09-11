@@ -44,7 +44,7 @@ type PageProps = {
 };
 
 const SITE_URL =
-  "https://donanim-portali.vercel.app";
+  "https://donanimportali.com";
 
 async function getGuide(
   slug: string
