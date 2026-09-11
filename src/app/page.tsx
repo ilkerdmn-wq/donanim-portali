@@ -132,22 +132,51 @@ export default function HomePage() {
     <div className="max-w-[1400px] mx-auto px-6 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-8 flex flex-col gap-8">
-          <div className="p-10 border border-zinc-800/80 rounded-3xl bg-zinc-900/40 flex flex-col items-start gap-4 shadow-sm">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/50 border border-cyan-900/50 text-cyan-400 text-[10px] font-extrabold uppercase tracking-widest">
+          <section className="relative overflow-hidden p-8 sm:p-10 border border-zinc-800/80 rounded-3xl bg-zinc-900/50 flex flex-col items-start gap-5 shadow-[0_0_50px_rgba(8,145,178,0.08)]">
+            <div
+              aria-hidden="true"
+              className="absolute -right-24 -top-28 h-72 w-72 rounded-full bg-cyan-500/15 blur-3xl motion-safe:animate-pulse"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-blue-600/10 blur-3xl motion-safe:animate-pulse"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(34,211,238,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.07)_1px,transparent_1px)] [background-size:28px_28px]"
+            />
+
+            <div className="relative inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-800/70 text-cyan-300 text-[10px] font-extrabold uppercase tracking-widest">
               <Sparkles size={12} />
               YENİ NESİL TEKNOLOJİ ÜSSÜ
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-              Bugünün sistemini daha bilinçli kur.
+            <h1 className="relative max-w-3xl text-3xl md:text-5xl font-extrabold leading-[1.1] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-cyan-400">
+              Donanım Haberleri, PC Toplama ve Hesaplama Araçları
             </h1>
 
-            <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl">
-              Güncel donanım haberleri, nokta atışı test notları ve karar
-              vermeyi hızlandıran gelişmiş hesap makineleri ile gürültüden
-              arındırılmış teknoloji rehberi.
+            <p className="relative text-zinc-300 text-sm md:text-base leading-relaxed max-w-2xl">
+              Güncel donanım gelişmelerini takip et; işlemci, ekran kartı ve
+              sistem bileşenlerini karşılaştır. PC toplama, FPS, darboğaz ve
+              PSU hesaplama araçlarıyla ihtiyaçlarına uygun sistemi daha
+              bilinçli seç.
             </p>
-          </div>
+
+            <div className="relative flex flex-wrap gap-2 pt-1 text-[11px] font-bold uppercase tracking-wide text-zinc-300">
+              {[
+                "Donanım Haberleri",
+                "PC Toplama",
+                "Akıllı Hesaplama",
+              ].map((label) => (
+                <span
+                  key={label}
+                  className="rounded-full border border-zinc-700/80 bg-zinc-950/40 px-3 py-1.5 backdrop-blur-sm"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </section>
 
           <HomeNews />
         </div>
