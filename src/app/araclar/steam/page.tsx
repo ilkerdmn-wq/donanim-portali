@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Download, Sparkles, Gauge } from "lucide-react";
+import ToolGuide from "@/app/components/ToolGuide";
 
 export default function SteamDownloadPage() {
   const [fileSize, setFileSize] = useState<number>(50); // GB
@@ -87,6 +88,7 @@ export default function SteamDownloadPage() {
           </div>
         )}
       </div>
+      <ToolGuide tool="steam" />
     </div>
   );
 }

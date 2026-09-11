@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, Download, Sparkles, FileUp, FileCheck } from "lucide-react";
 import { jsPDF } from "jspdf";
+import ToolGuide from "@/app/components/ToolGuide";
 
 export default function BelgeDonusturucuPage() {
   const [rawText, setRawText] = useState<string>("");
@@ -139,6 +140,7 @@ export default function BelgeDonusturucuPage() {
           </div>
         )}
       </div>
+      <ToolGuide tool="belge" />
     </div>
   );
 }

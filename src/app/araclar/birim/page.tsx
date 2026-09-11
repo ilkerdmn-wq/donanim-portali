@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, Layers } from "lucide-react";
+import ToolGuide from "@/app/components/ToolGuide";
 
 export default function BirimDonusturucuPage() {
   const [category, setCategory] = useState<"storage" | "freq">("storage");
@@ -132,6 +133,7 @@ export default function BirimDonusturucuPage() {
           </div>
         </div>
       </div>
+      <ToolGuide tool="birim" />
     </div>
   );
 }

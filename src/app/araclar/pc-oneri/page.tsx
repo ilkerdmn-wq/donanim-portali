@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import type { PricedHardwareItem } from "@/app/lib/hardware-types";
+import ToolGuide from "@/app/components/ToolGuide";
 
 type BudgetTier = "dusuk" | "orta" | "yuksek";
 
@@ -2122,6 +2123,7 @@ export default function PcOneriPage() {
           </div>
         </div>
       )}
+      <ToolGuide tool="pc-oneri" />
     </div>
   );
 }

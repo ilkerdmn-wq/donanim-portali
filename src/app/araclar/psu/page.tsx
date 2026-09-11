@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import type { PricedHardwareItem } from "@/app/lib/hardware-types";
+import ToolGuide from "@/app/components/ToolGuide";
 
 function getSpec(
   item: PricedHardwareItem | null | undefined,
@@ -856,6 +857,7 @@ export default function PsuHesaplayiciPage() {
           </div>
         </div>
       )}
+      <ToolGuide tool="psu" />
     </div>
   );
 }

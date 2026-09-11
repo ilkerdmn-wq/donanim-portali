@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, Image as ImageIcon, Download, Upload } from "lucide-react";
+import ToolGuide from "@/app/components/ToolGuide";
 
 export default function ResimDonusturucuPage() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -135,6 +136,7 @@ export default function ResimDonusturucuPage() {
           </div>
         )}
       </div>
+      <ToolGuide tool="resim" />
     </div>
   );
 }
