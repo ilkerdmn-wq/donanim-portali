@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 
 import {
   Geist,
@@ -114,6 +115,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-zinc-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-zinc-950`}
       >
+        <Script
+          id="google-adsense"
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5297887307944126"
+          crossOrigin="anonymous"
+          strategy="beforeInteractive"
+        />
+
         <SiteShell>
           <ScrollToTop />
           {children}
