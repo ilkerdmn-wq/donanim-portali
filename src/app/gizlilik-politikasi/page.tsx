@@ -34,7 +34,7 @@ export default function PrivacyPolicyPage() {
         },
         {
           title: "Üçüncü taraf hizmetler",
-          paragraphs: ["Altyapı, veri depolama, analiz veya reklam hizmeti sağlayan üçüncü taraflar kendi gizlilik politikalarına göre veri işleyebilir. Bu hizmetlerin uygulamalarını düzenli olarak gözden geçirmen önerilir."],
+          paragraphs: ["Altyapı, veri depolama, analiz veya reklam hizmeti sağlayan üçüncü taraflar kendi gizlilik politikalarına göre veri işleyebilir. Google Analytics 4; ziyaret, sayfa görüntüleme ve kullanım eğilimlerini toplu olarak anlamamıza yardımcı olur. Bu hizmetlerin uygulamalarını düzenli olarak gözden geçirmen önerilir."],
         },
         {
           title: "Politika değişiklikleri",
