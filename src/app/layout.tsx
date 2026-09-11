@@ -11,6 +11,8 @@ import "./globals.css";
 import SiteShell from "./components/SiteShell";
 import ScrollToTop from "./components/ScrollToTop";
 
+const GA_MEASUREMENT_ID = "G-7ODW7VSKKL";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -138,6 +140,20 @@ export default function RootLayout({
           crossOrigin="anonymous"
           strategy="beforeInteractive"
         />
+
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}');
+          `}
+        </Script>
 
         <SiteShell>
           <ScrollToTop />
