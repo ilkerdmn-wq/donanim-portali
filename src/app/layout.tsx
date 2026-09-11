@@ -11,7 +11,7 @@ import "./globals.css";
 import SiteShell from "./components/SiteShell";
 import ScrollToTop from "./components/ScrollToTop";
 
-const GA_MEASUREMENT_ID = "G-7ODW7VSKKL";
+const GA_MEASUREMENT_ID = "G-6YN3FPW2YE";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
