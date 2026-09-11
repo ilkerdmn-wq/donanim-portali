@@ -7,11 +7,11 @@ import {
   useState,
 } from "react";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import {
-  Zap,
   Home,
   Newspaper,
   Sparkles,
@@ -58,8 +58,11 @@ function PortalShell({
     useState(false);
 
   const adminTapCountRef = useRef(0);
+
   const adminTapTimerRef =
-    useRef<ReturnType<typeof setTimeout> | null>(null);
+    useRef<ReturnType<typeof setTimeout> | null>(
+      null
+    );
 
   const isManagement =
     pathname.startsWith("/yonetim");
@@ -75,7 +78,8 @@ function PortalShell({
           }
         );
 
-        const result = await response.json();
+        const result =
+          await response.json();
 
         setIsAdminAuthenticated(
           response.ok &&
@@ -98,7 +102,9 @@ function PortalShell({
 
   useEffect(() => {
     return () => {
-      if (adminTapTimerRef.current) {
+      if (
+        adminTapTimerRef.current
+      ) {
         clearTimeout(
           adminTapTimerRef.current
         );
@@ -109,13 +115,17 @@ function PortalShell({
   const handleSecretAdminTap = () => {
     adminTapCountRef.current += 1;
 
-    if (adminTapTimerRef.current) {
+    if (
+      adminTapTimerRef.current
+    ) {
       clearTimeout(
         adminTapTimerRef.current
       );
     }
 
-    if (adminTapCountRef.current >= 5) {
+    if (
+      adminTapCountRef.current >= 5
+    ) {
       adminTapCountRef.current = 0;
 
       window.location.href =
@@ -132,29 +142,34 @@ function PortalShell({
       }, 2500);
   };
 
-  const handleLogout = async () => {
-    if (loggingOut) {
-      return;
-    }
+  const handleLogout =
+    async () => {
+      if (loggingOut) {
+        return;
+      }
 
-    setLoggingOut(true);
+      setLoggingOut(true);
 
-    try {
-      await fetch(
-        "/api/admin/logout",
-        {
-          method: "POST",
-        }
-      );
-    } catch {
-      // Cookie sunucu tarafında siliniyor.
-    } finally {
-      setIsAdminAuthenticated(false);
-      setLoggingOut(false);
-      window.location.href =
-        "/yonetim/giris";
-    }
-  };
+      try {
+        await fetch(
+          "/api/admin/logout",
+          {
+            method: "POST",
+          }
+        );
+      } catch {
+        // Cookie sunucu tarafında siliniyor.
+      } finally {
+        setIsAdminAuthenticated(
+          false
+        );
+
+        setLoggingOut(false);
+
+        window.location.href =
+          "/yonetim/giris";
+      }
+    };
 
   if (
     hydrated &&
@@ -166,7 +181,9 @@ function PortalShell({
         <div className="max-w-xl w-full rounded-3xl border border-amber-500/20 bg-zinc-900/70 p-8 text-center">
           <button
             type="button"
-            onClick={handleSecretAdminTap}
+            onClick={
+              handleSecretAdminTap
+            }
             className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center"
             aria-label="Site durumu"
           >
@@ -181,8 +198,10 @@ function PortalShell({
           </h1>
 
           <p className="text-sm text-zinc-400 mt-3 leading-6">
-            {settings.siteName} şu anda kısa süreli bakımda.
-            Lütfen daha sonra tekrar kontrol edin.
+            {settings.siteName} şu
+            anda kısa süreli bakımda.
+            Lütfen daha sonra tekrar
+            kontrol edin.
           </p>
         </div>
       </div>
@@ -232,23 +251,38 @@ function PortalShell({
     },
   ];
 
-  const isActiveLink = (href: string) => {
+  const isActiveLink = (
+    href: string
+  ) => {
     if (href === "/") {
       return pathname === "/";
     }
 
-    if (href === "/araclar/pc-oneri") {
-      return pathname.startsWith("/araclar/pc-oneri");
-    }
-
-    if (href === "/araclar") {
-      return (
-        pathname.startsWith("/araclar") &&
-        !pathname.startsWith("/araclar/pc-oneri")
+    if (
+      href ===
+      "/araclar/pc-oneri"
+    ) {
+      return pathname.startsWith(
+        "/araclar/pc-oneri"
       );
     }
 
-    return pathname.startsWith(href);
+    if (
+      href === "/araclar"
+    ) {
+      return (
+        pathname.startsWith(
+          "/araclar"
+        ) &&
+        !pathname.startsWith(
+          "/araclar/pc-oneri"
+        )
+      );
+    }
+
+    return pathname.startsWith(
+      href
+    );
   };
 
   return (
@@ -258,13 +292,19 @@ function PortalShell({
           <div className="flex items-center gap-2.5">
             <button
               type="button"
-              onClick={handleSecretAdminTap}
-              className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-cyan-500 to-cyan-400 flex items-center justify-center text-zinc-950 shadow-lg shadow-cyan-500/20 hover:scale-105 transition-transform"
+              onClick={
+                handleSecretAdminTap
+              }
+              className="w-10 h-10 rounded-full overflow-hidden border border-cyan-500/30 bg-zinc-950 shadow-lg shadow-cyan-500/20 hover:scale-105 transition-transform"
               aria-label="Donanım Portalı"
             >
-              <Zap
-                size={20}
-                className="fill-zinc-950"
+              <Image
+                src="/donanim-portali-logo.png"
+                alt="Donanım Portalı"
+                width={40}
+                height={40}
+                priority
+                className="w-full h-full object-cover"
               />
             </button>
 
@@ -273,36 +313,57 @@ function PortalShell({
               className="flex flex-col min-w-0"
             >
               <span className="text-sm font-extrabold tracking-wider text-white truncate">
-                {settings.siteName.toLocaleUpperCase("tr-TR")}
+                {settings.siteName.toLocaleUpperCase(
+                  "tr-TR"
+                )}
               </span>
 
               <span className="text-[9px] text-zinc-400 font-semibold tracking-widest uppercase truncate">
-                {settings.siteSlogan}
+                {
+                  settings.siteSlogan
+                }
               </span>
             </Link>
           </div>
 
           <nav className="hidden md:flex items-center gap-1 bg-zinc-900/50 border border-zinc-800/80 px-3 py-1.5 rounded-2xl">
-            {publicLinks.map((item) => {
-              const Icon = item.icon;
-              const active =
-                isActiveLink(item.href);
+            {publicLinks.map(
+              (item) => {
+                const Icon =
+                  item.icon;
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={
-                    active
-                      ? "px-3.5 py-1.5 rounded-xl text-xs font-bold text-cyan-400 bg-cyan-950/40 border border-cyan-900/50 transition-all flex items-center gap-1.5 shadow-sm"
-                      : "px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800/60 transition-all flex items-center gap-1.5"
-                  }
-                >
-                  <Icon size={14} />
-                  {item.label}
-                </Link>
-              );
-            })}
+                const active =
+                  isActiveLink(
+                    item.href
+                  );
+
+                return (
+                  <Link
+                    key={
+                      item.href
+                    }
+                    href={
+                      item.href
+                    }
+                    className={
+                      active
+                        ? "px-3.5 py-1.5 rounded-xl text-xs font-bold text-cyan-400 bg-cyan-950/40 border border-cyan-900/50 transition-all flex items-center gap-1.5 shadow-sm"
+                        : "px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800/60 transition-all flex items-center gap-1.5"
+                    }
+                  >
+                    <Icon
+                      size={
+                        14
+                      }
+                    />
+
+                    {
+                      item.label
+                    }
+                  </Link>
+                );
+              }
+            )}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -314,23 +375,35 @@ function PortalShell({
                     href="/yonetim"
                     className="px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/15 border border-cyan-500/20 text-xs font-bold text-cyan-400 transition-all flex items-center gap-1.5 shadow-sm"
                   >
-                    <LayoutDashboard size={14} />
+                    <LayoutDashboard
+                      size={14}
+                    />
                     Panel
                   </Link>
 
                   <button
                     type="button"
-                    onClick={handleLogout}
-                    disabled={loggingOut}
+                    onClick={
+                      handleLogout
+                    }
+                    disabled={
+                      loggingOut
+                    }
                     className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-red-500/10 border border-zinc-800 hover:border-red-500/20 text-xs font-bold text-zinc-400 hover:text-red-400 disabled:opacity-50 transition-all flex items-center gap-1.5 shadow-sm"
                   >
                     {loggingOut ? (
                       <Loader2
-                        size={14}
+                        size={
+                          14
+                        }
                         className="animate-spin"
                       />
                     ) : (
-                      <LogOut size={14} />
+                      <LogOut
+                        size={
+                          14
+                        }
+                      />
                     )}
 
                     Çıkış
@@ -341,12 +414,16 @@ function PortalShell({
             <button
               type="button"
               onClick={() =>
-                setMobileMenuOpen(true)
+                setMobileMenuOpen(
+                  true
+                )
               }
               className="md:hidden w-10 h-10 rounded-xl border border-zinc-800 bg-zinc-900/80 text-zinc-300 flex items-center justify-center hover:text-white hover:border-zinc-700 transition-colors"
               aria-label="Menüyü aç"
             >
-              <Menu size={20} />
+              <Menu
+                size={20}
+              />
             </button>
           </div>
         </div>
@@ -358,7 +435,9 @@ function PortalShell({
             type="button"
             aria-label="Menüyü kapat"
             onClick={() =>
-              setMobileMenuOpen(false)
+              setMobileMenuOpen(
+                false
+              )
             }
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
           />
@@ -371,53 +450,76 @@ function PortalShell({
                 </p>
 
                 <p className="text-sm font-extrabold text-white mt-1">
-                  {settings.siteName}
+                  {
+                    settings.siteName
+                  }
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() =>
-                  setMobileMenuOpen(false)
+                  setMobileMenuOpen(
+                    false
+                  )
                 }
                 className="w-10 h-10 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 flex items-center justify-center"
                 aria-label="Menüyü kapat"
               >
-                <X size={19} />
+                <X
+                  size={19}
+                />
               </button>
             </div>
 
             <nav className="flex flex-col gap-2 mt-5">
-              {publicLinks.map((item) => {
-                const Icon = item.icon;
-                const active =
-                  isActiveLink(item.href);
+              {publicLinks.map(
+                (item) => {
+                  const Icon =
+                    item.icon;
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() =>
-                      setMobileMenuOpen(false)
-                    }
-                    className={
-                      active
-                        ? "flex items-center gap-3 px-4 py-4 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 text-sm font-black text-cyan-300 transition-all"
-                        : "flex items-center gap-3 px-4 py-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 text-sm font-bold text-zinc-300 hover:text-white hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all"
-                    }
-                  >
-                    <Icon
-                      size={18}
+                  const active =
+                    isActiveLink(
+                      item.href
+                    );
+
+                  return (
+                    <Link
+                      key={
+                        item.href
+                      }
+                      href={
+                        item.href
+                      }
+                      onClick={() =>
+                        setMobileMenuOpen(
+                          false
+                        )
+                      }
                       className={
                         active
-                          ? "text-cyan-300"
-                          : "text-cyan-400"
+                          ? "flex items-center gap-3 px-4 py-4 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 text-sm font-black text-cyan-300 transition-all"
+                          : "flex items-center gap-3 px-4 py-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 text-sm font-bold text-zinc-300 hover:text-white hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all"
                       }
-                    />
-                    {item.label}
-                  </Link>
-                );
-              })}
+                    >
+                      <Icon
+                        size={
+                          18
+                        }
+                        className={
+                          active
+                            ? "text-cyan-300"
+                            : "text-cyan-400"
+                        }
+                      />
+
+                      {
+                        item.label
+                      }
+                    </Link>
+                  );
+                }
+              )}
             </nav>
 
             {isManagement &&
@@ -426,18 +528,29 @@ function PortalShell({
                 <div className="mt-6 pt-5 border-t border-zinc-800">
                   <button
                     type="button"
-                    onClick={handleLogout}
-                    disabled={loggingOut}
+                    onClick={
+                      handleLogout
+                    }
+                    disabled={
+                      loggingOut
+                    }
                     className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl border border-red-500/20 bg-red-500/5 text-sm font-bold text-red-400"
                   >
                     {loggingOut ? (
                       <Loader2
-                        size={16}
+                        size={
+                          16
+                        }
                         className="animate-spin"
                       />
                     ) : (
-                      <LogOut size={16} />
+                      <LogOut
+                        size={
+                          16
+                        }
+                      />
                     )}
+
                     Çıkış
                   </button>
                 </div>
@@ -452,7 +565,9 @@ function PortalShell({
           <div className="border-b border-cyan-500/20 bg-cyan-500/10">
             <div className="max-w-[1400px] mx-auto px-6 py-2.5">
               <p className="text-xs text-cyan-100 text-center font-semibold">
-                {settings.announcement}
+                {
+                  settings.announcement
+                }
               </p>
             </div>
           </div>
