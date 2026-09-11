@@ -576,6 +576,28 @@ function PortalShell({
       <main className="flex-1">
         {children}
       </main>
+
+      <footer className="border-t border-zinc-800 bg-zinc-950">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-extrabold text-white">
+              {settings.siteName}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-zinc-500 max-w-xl">
+              Donanım haberleri, rehberler ve araçlar bilgi amaçlı sunulur. Satın alma öncesinde güncel ürün ve fiyat bilgilerini doğrulayın.
+            </p>
+          </div>
+
+          <nav className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-zinc-400">
+            <Link href="/hakkimizda" className="hover:text-cyan-400 transition-colors">Hakkımızda</Link>
+            <Link href="/gizlilik-politikasi" className="hover:text-cyan-400 transition-colors">Gizlilik</Link>
+            <Link href="/cerez-politikasi" className="hover:text-cyan-400 transition-colors">Çerezler</Link>
+            <Link href="/kullanim-kosullari" className="hover:text-cyan-400 transition-colors">Kullanım Koşulları</Link>
+            <Link href="/sorumluluk-reddi" className="hover:text-cyan-400 transition-colors">Sorumluluk Reddi</Link>
+            <Link href="/iletisim" className="hover:text-cyan-400 transition-colors">İletişim</Link>
+          </nav>
+        </div>
+      </footer>
     </>
   );
 }

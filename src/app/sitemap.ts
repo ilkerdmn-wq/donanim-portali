@@ -418,6 +418,36 @@ export default async function sitemap(): Promise<
           "monthly",
         priority: 0.5,
       },
+
+      {
+        url: `${SITE_URL}/hakkimizda`,
+        changeFrequency: "monthly",
+        priority: 0.5,
+      },
+
+      {
+        url: `${SITE_URL}/gizlilik-politikasi`,
+        changeFrequency: "monthly",
+        priority: 0.4,
+      },
+
+      {
+        url: `${SITE_URL}/cerez-politikasi`,
+        changeFrequency: "monthly",
+        priority: 0.4,
+      },
+
+      {
+        url: `${SITE_URL}/kullanim-kosullari`,
+        changeFrequency: "monthly",
+        priority: 0.4,
+      },
+
+      {
+        url: `${SITE_URL}/sorumluluk-reddi`,
+        changeFrequency: "monthly",
+        priority: 0.4,
+      },
     ];
 
   const news =
