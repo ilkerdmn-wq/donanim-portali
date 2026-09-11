@@ -17,6 +17,8 @@ import {
   Wrench,
 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 type Guide = {
   id: number;
   title: string;

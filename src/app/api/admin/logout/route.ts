@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-
-const COOKIE_NAME = "donanim_admin_session";
+import { ADMIN_COOKIE_NAME } from "@/app/lib/admin-auth";
 
 export async function POST() {
   const response =
@@ -9,7 +8,7 @@ export async function POST() {
     });
 
   response.cookies.set(
-    COOKIE_NAME,
+    ADMIN_COOKIE_NAME,
     "",
     {
       httpOnly: true,

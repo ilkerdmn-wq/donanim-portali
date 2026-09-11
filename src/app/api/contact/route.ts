@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit, getClientIdentifier } from "@/app/lib/rate-limit";
 
 type ContactPayload = {
   name?: unknown;
@@ -25,6 +26,27 @@ function isValidEmail(email: string) {
 
 export async function POST(request: Request) {
   try {
+    const contentLength = Number(request.headers.get("content-length") || 0);
+    if (contentLength > 16_000) {
+      return NextResponse.json(
+        { error: "Gönderilen veri çok büyük." },
+        { status: 413 }
+      );
+    }
+
+    const clientId = getClientIdentifier(request);
+    const rateLimit = checkRateLimit(`contact:${clientId}`, 5, 60 * 60 * 1000);
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Çok fazla mesaj gönderdiniz. Lütfen daha sonra tekrar deneyin." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
+        }
+      );
+    }
+
     const body =
       (await request.json()) as ContactPayload;
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { verifyAdminSessionToken } from "@/app/lib/admin-auth";
 
 const ADMIN_COOKIE_NAME = "donanim_admin_session";
 
@@ -43,44 +44,14 @@ function getSupabaseAdmin() {
   });
 }
 
-async function createExpectedAdminToken() {
-  const password = process.env.ADMIN_PASSWORD;
-  const sessionSecret = process.env.ADMIN_SESSION_SECRET;
-
-  if (!password || !sessionSecret) {
-    return null;
-  }
-
-  const data = new TextEncoder().encode(
-    `${sessionSecret}:${password}`
-  );
-
-  const hash = await crypto.subtle.digest(
-    "SHA-256",
-    data
-  );
-
-  return Array.from(new Uint8Array(hash))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 async function isAdminAuthenticated(
   request: NextRequest
 ) {
-  const expectedToken =
-    await createExpectedAdminToken();
-
-  if (!expectedToken) {
-    return false;
-  }
-
   const currentToken =
     request.cookies.get(
       ADMIN_COOKIE_NAME
     )?.value || "";
-
-  return currentToken === expectedToken;
+  return verifyAdminSessionToken(currentToken);
 }
 
 function rowToSettings(

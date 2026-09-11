@@ -299,7 +299,7 @@ function PortalShell({
               aria-label="Donanım Portalı"
             >
               <Image
-                src="/donanim-portali-logo.png"
+                src="/logo-mark.png"
                 alt="Donanım Portalı"
                 width={40}
                 height={40}

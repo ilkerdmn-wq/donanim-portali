@@ -7,6 +7,8 @@ import {
   Star,
 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 type GuideRow = {
   id: number;
   title: string;

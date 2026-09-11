@@ -31,24 +31,18 @@ function wait(ms: number) {
 }
 
 function isAuthorized(request: NextRequest) {
-  const manualSecret =
+  const expectedManualSecret =
     process.env.PRICE_UPDATE_SECRET;
 
   const cronSecret =
     process.env.CRON_SECRET;
 
-  /*
-    MANUEL TEST
-
-    Örnek:
-    /api/prices/update?secret=...
-  */
-  const querySecret =
-    request.nextUrl.searchParams.get("secret");
+  const receivedManualSecret =
+    request.headers.get("x-price-update-secret");
 
   if (
-    manualSecret &&
-    querySecret === manualSecret
+    expectedManualSecret &&
+    receivedManualSecret === expectedManualSecret
   ) {
     return true;
   }

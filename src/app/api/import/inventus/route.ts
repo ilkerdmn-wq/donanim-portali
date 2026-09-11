@@ -25,10 +25,7 @@ function isAuthorized(request: NextRequest) {
 
   if (!secret) return false;
 
-  const querySecret =
-    request.nextUrl.searchParams.get("secret");
-
-  return querySecret === secret;
+  return request.headers.get("x-price-update-secret") === secret;
 }
 
 export async function GET(request: NextRequest) {

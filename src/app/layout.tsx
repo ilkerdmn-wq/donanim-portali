@@ -76,6 +76,16 @@ export const metadata: Metadata = {
     telephone: false,
   },
 
+  icons: {
+    icon: [
+      { url: "/favicon-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+
   openGraph: {
     type: "website",
     locale: "tr_TR",

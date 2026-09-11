@@ -12,7 +12,9 @@ export async function GET(request: NextRequest) {
 
     let query = supabaseAdmin
       .from("hardware_items_with_price")
-      .select("*")
+      .select(
+        "id,name,slug,category,description,specs,price,current_price,current_price_source,price_checked_at,has_valid_price"
+      )
       .order("name", { ascending: true });
 
     if (category) {

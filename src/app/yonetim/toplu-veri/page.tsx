@@ -583,8 +583,6 @@ export default function BulkDataManagementPage() {
           new URLSearchParams({
             category:
               selectedCategory,
-            secret:
-              secret.trim(),
           });
 
         const response =
@@ -593,6 +591,9 @@ export default function BulkDataManagementPage() {
             {
               cache:
                 "no-store",
+              headers: {
+                "x-price-update-secret": secret.trim(),
+              },
             }
           );
 
@@ -654,8 +655,6 @@ export default function BulkDataManagementPage() {
             category:
               selectedCategory,
             commit: "true",
-            secret:
-              secret.trim(),
           });
 
         const response =
@@ -664,6 +663,9 @@ export default function BulkDataManagementPage() {
             {
               cache:
                 "no-store",
+              headers: {
+                "x-price-update-secret": secret.trim(),
+              },
             }
           );
 
@@ -725,18 +727,15 @@ export default function BulkDataManagementPage() {
       setMessage("");
 
       try {
-        const params =
-          new URLSearchParams({
-            secret:
-              secret.trim(),
-          });
-
         const response =
           await fetch(
-            `/api/prices/update?${params.toString()}`,
+            "/api/prices/update",
             {
               cache:
                 "no-store",
+              headers: {
+                "x-price-update-secret": secret.trim(),
+              },
             }
           );
 
