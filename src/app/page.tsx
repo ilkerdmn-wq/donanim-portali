@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import HomeNews from "./components/HomeNews";
+import SidebarGuides from "./components/SidebarGuides";
 
 const SITE_URL =
   "https://donanimportali.com";
@@ -247,6 +248,8 @@ export default function HomePage() {
               })}
             </div>
           </div>
+
+          <SidebarGuides />
         </div>
       </div>
     </div>
