@@ -135,7 +135,7 @@ export default function HomeNews() {
     news.find((item) => item.featured === true) || news[0];
 
   const otherNews = featuredNews
-    ? news.filter((item) => item.id !== featuredNews.id).slice(0, 4)
+    ? news.filter((item) => item.id !== featuredNews.id)
     : [];
 
   return (
@@ -166,7 +166,7 @@ export default function HomeNews() {
             </div>
 
             <span className="text-[11px] text-zinc-600 font-medium">
-              Son 5 haber
+              Manşet ve son haberler
             </span>
           </div>
 
@@ -249,60 +249,68 @@ export default function HomeNews() {
             )}
           </Link>
 
-          {otherNews.map((item) => (
-            <Link
-              key={item.id}
-              href={getNewsUrl(item)}
-              className="group flex items-center gap-5 rounded-2xl border border-zinc-800/70 bg-zinc-900/30 p-4 hover:border-cyan-500/30 hover:bg-zinc-900/60 transition-all"
-            >
-              {item.image_url ? (
-                <div className="w-[150px] h-[95px] shrink-0 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800">
-                  <img
-                    src={item.image_url}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-              ) : (
-                <div className="w-[150px] h-[95px] shrink-0 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center">
-                  <Newspaper
-                    size={30}
-                    className="text-zinc-800"
-                  />
-                </div>
-              )}
+          <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/25 p-2">
+            <div className="flex items-center justify-between px-2.5 pb-2 pt-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
+                Son Haberler
+              </span>
+              <span className="text-[10px] text-zinc-600">
+                {otherNews.length} haber
+              </span>
+            </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-3 mb-2">
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-cyan-400">
-                    <Tag size={10} />
-                    {item.category || "Genel"}
-                  </span>
+            <div className="max-h-[480px] space-y-2 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:#3f3f46_transparent] [scrollbar-width:thin]">
+              {otherNews.map((item) => (
+                <Link
+                  key={item.id}
+                  href={getNewsUrl(item)}
+                  className="group flex items-center gap-4 rounded-xl border border-zinc-800/70 bg-zinc-900/30 p-3 hover:border-cyan-500/30 hover:bg-zinc-900/60 transition-all"
+                >
+                  {item.image_url ? (
+                    <div className="w-[112px] h-[76px] shrink-0 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800">
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-[112px] h-[76px] shrink-0 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center">
+                      <Newspaper
+                        size={26}
+                        className="text-zinc-800"
+                      />
+                    </div>
+                  )}
 
-                  <span className="inline-flex items-center gap-1.5 text-[10px] text-zinc-600">
-                    <CalendarDays size={10} />
-                    {formatDate(item.created_at)}
-                  </span>
-                </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-black text-cyan-400">
+                        <Tag size={10} />
+                        {item.category || "Genel"}
+                      </span>
 
-                <h3 className="text-base md:text-lg font-black text-white leading-tight group-hover:text-cyan-400 transition-colors">
-                  {item.title}
-                </h3>
+                      <span className="inline-flex items-center gap-1 text-[10px] text-zinc-600">
+                        <CalendarDays size={10} />
+                        {formatDate(item.created_at)}
+                      </span>
+                    </div>
 
-                <p className="text-[11px] md:text-xs text-zinc-500 leading-5 mt-2 line-clamp-2">
-                  {item.excerpt ||
-                    "Bu haber için kısa açıklama eklenmemiş."}
-                </p>
-              </div>
+                    <h3 className="text-sm md:text-base font-black text-white leading-tight group-hover:text-cyan-400 transition-colors line-clamp-2">
+                      {item.title}
+                    </h3>
+                  </div>
 
-              <div className="hidden sm:flex w-9 h-9 shrink-0 rounded-full border border-zinc-800 items-center justify-center group-hover:border-cyan-500/40 transition-colors">
-                <ArrowRight
-                  size={15}
-                  className="text-zinc-600 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all"
-                />
-              </div>
-            </Link>
-          ))}
+                  <div className="hidden sm:flex w-8 h-8 shrink-0 rounded-full border border-zinc-800 items-center justify-center group-hover:border-cyan-500/40 transition-colors">
+                    <ArrowRight
+                      size={14}
+                      className="text-zinc-600 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all"
+                    />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
 
           <div className="flex justify-end pt-1">
             <Link
