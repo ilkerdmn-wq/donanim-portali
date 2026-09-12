@@ -358,32 +358,9 @@ export default function HomeNews() {
               REHBERLER
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] text-zinc-600 font-medium">
-                {guides.length} rehber
-              </span>
-
-              {guides.length > 1 && (
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={showPreviousGuides}
-                    aria-label="Önceki rehberleri göster"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/70 text-zinc-400 transition-colors hover:border-cyan-500/40 hover:text-cyan-400"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={showNextGuides}
-                    aria-label="Sonraki rehberleri göster"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/70 text-zinc-400 transition-colors hover:border-cyan-500/40 hover:text-cyan-400"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-              )}
-            </div>
+            <span className="text-[11px] text-zinc-600 font-medium">
+              {guides.length} rehber
+            </span>
           </div>
 
           {guides.length === 0 ? (
@@ -393,8 +370,22 @@ export default function HomeNews() {
               </span>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {visibleGuides.map((guide) => (
+            <div className="flex items-stretch gap-2 sm:gap-3">
+              {guides.length > 1 && (
+                <button
+                  type="button"
+                  onClick={showPreviousGuides}
+                  aria-label="Önceki rehberleri göster"
+                  className="group/previous flex w-11 shrink-0 items-center justify-center rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950 text-zinc-500 shadow-sm transition-all hover:border-cyan-500/50 hover:from-cyan-950/60 hover:to-zinc-950 hover:text-cyan-300 active:scale-95"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-800/80 bg-zinc-950/60 transition-colors group-hover/previous:border-cyan-500/40">
+                    <ChevronLeft size={19} strokeWidth={2.5} />
+                  </span>
+                </button>
+              )}
+
+              <div className="grid flex-1 grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
+                {visibleGuides.map((guide) => (
                 <Link
                   key={guide.id}
                   href={`/rehber/${guide.slug}`}
@@ -438,7 +429,21 @@ export default function HomeNews() {
                     </div>
                   </div>
                 </Link>
-              ))}
+                ))}
+              </div>
+
+              {guides.length > 1 && (
+                <button
+                  type="button"
+                  onClick={showNextGuides}
+                  aria-label="Sonraki rehberleri göster"
+                  className="group/next flex w-11 shrink-0 items-center justify-center rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950 text-zinc-500 shadow-sm transition-all hover:border-cyan-500/50 hover:from-cyan-950/60 hover:to-zinc-950 hover:text-cyan-300 active:scale-95"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-800/80 bg-zinc-950/60 transition-colors group-hover/next:border-cyan-500/40">
+                    <ChevronRight size={19} strokeWidth={2.5} />
+                  </span>
+                </button>
+              )}
             </div>
           )}
 
