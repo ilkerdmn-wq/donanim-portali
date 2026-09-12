@@ -95,6 +95,12 @@ const contentCards = [
     icon: BookOpen,
   },
   {
+    title: "Oylama Yönetimi",
+    description: "Haftalık oylamaları oluştur ve sonuçları takip et.",
+    href: "/yonetim/oylamalar",
+    icon: BarChart3,
+  },
+  {
     title: "Gelen Mesajlar",
     description: "Ziyaretçilerden gelen iletişim mesajlarını görüntüle ve yönet.",
     href: "/yonetim/mesajlar",
