@@ -940,7 +940,7 @@ export default function FpsHesaplayiciPage() {
     };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6 overflow-x-clip">
       <div className="flex flex-col gap-1">
         <Link
           href="/araclar"
@@ -1165,7 +1165,7 @@ export default function FpsHesaplayiciPage() {
               </button>
             </div>
 
-            <div className="lg:col-span-7 p-6 bg-zinc-900/60 border border-zinc-800/80 rounded-3xl min-h-[500px] flex flex-col">
+            <div className="lg:col-span-7 min-w-0 p-4 sm:p-6 bg-zinc-900/60 border border-zinc-800/80 rounded-3xl min-h-[500px] flex flex-col">
               {!hasCalculated ? (
                 <div className="flex flex-col items-center justify-center text-center gap-3 my-auto py-24">
                   <div className="w-14 h-14 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-center text-cyan-400 shadow-inner">
@@ -1189,8 +1189,8 @@ export default function FpsHesaplayiciPage() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-4">
-                  <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
-                    <div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 border-b border-zinc-800 pb-3">
+                    <div className="min-w-0">
                       <h3 className="text-base font-bold text-white flex items-center gap-2">
                         <Gamepad2
                           size={18}
@@ -1204,7 +1204,7 @@ export default function FpsHesaplayiciPage() {
                         )
                       </h3>
 
-                      <p className="text-[10px] text-zinc-500 mt-1">
+                      <p className="text-[10px] text-zinc-500 mt-1 break-words">
                         CPU:{" "}
                         {
                           selectedCpu
@@ -1217,18 +1217,18 @@ export default function FpsHesaplayiciPage() {
                         }
                       </p>
 
-                      <p className="text-[10px] text-zinc-600 mt-1">
+                      <p className="text-[10px] text-zinc-600 mt-1 break-words">
                         Native çözünürlük • RT kapalı • Upscaling kapalı • Frame Generation kapalı
                       </p>
                     </div>
 
-                    <span className="text-xs text-zinc-400">
+                    <span className="text-xs text-zinc-400 shrink-0">
                       15 Popüler Oyun
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 gap-2.5">
-                    <div className="grid grid-cols-12 text-[11px] font-bold text-zinc-500 px-4 py-1 uppercase tracking-wider">
+                    <div className="grid grid-cols-12 text-[10px] sm:text-[11px] font-bold text-zinc-500 px-2 sm:px-4 py-1 uppercase tracking-wider">
                       <span className="col-span-6">
                         Oyun Adı
                       </span>
@@ -1250,16 +1250,16 @@ export default function FpsHesaplayiciPage() {
                           key={
                             game.name
                           }
-                          className="grid grid-cols-12 items-center p-4 bg-zinc-950 border border-zinc-800/80 rounded-2xl hover:border-cyan-500/40 transition-all"
+                          className="grid grid-cols-12 items-center p-3 sm:p-4 bg-zinc-950 border border-zinc-800/80 rounded-2xl hover:border-cyan-500/40 transition-all"
                         >
-                          <span className="col-span-6 text-sm font-bold text-white">
+                          <span className="col-span-6 min-w-0 break-words text-xs sm:text-sm font-bold text-white">
                             {
                               game.name
                             }
                           </span>
 
                           <div className="col-span-3 text-center">
-                            <span className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-extrabold rounded-xl">
+                            <span className="whitespace-nowrap px-1.5 sm:px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-[10px] sm:text-xs font-extrabold rounded-xl">
                               {
                                 game.mediumFps
                               }{" "}
@@ -1268,7 +1268,7 @@ export default function FpsHesaplayiciPage() {
                           </div>
 
                           <div className="col-span-3 text-center">
-                            <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-extrabold rounded-xl">
+                            <span className="whitespace-nowrap px-1.5 sm:px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] sm:text-xs font-extrabold rounded-xl">
                               {
                                 game.ultraFps
                               }{" "}
