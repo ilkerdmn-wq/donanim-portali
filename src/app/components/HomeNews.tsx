@@ -10,6 +10,8 @@ import {
   Loader2,
   Star,
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import { supabase } from "../lib/supabase";
@@ -51,6 +53,7 @@ export default function HomeNews() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [guides, setGuides] = useState<GuideItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [guideStartIndex, setGuideStartIndex] = useState(0);
 
   useEffect(() => {
     loadHomeContent();
@@ -74,8 +77,7 @@ export default function HomeNews() {
           "id,title,slug,excerpt,cover_image_url,category,published,created_at,updated_at"
         )
         .eq("published", true)
-        .order("updated_at", { ascending: false })
-        .limit(2),
+        .order("updated_at", { ascending: false }),
     ]);
 
     if (newsError) {
@@ -137,6 +139,30 @@ export default function HomeNews() {
   const otherNews = featuredNews
     ? news.filter((item) => item.id !== featuredNews.id)
     : [];
+
+  const visibleGuides =
+    guides.length <= 1
+      ? guides
+      : [
+          guides[guideStartIndex],
+          guides[(guideStartIndex + 1) % guides.length],
+        ];
+
+  const showPreviousGuides = () => {
+    setGuideStartIndex((currentIndex) =>
+      guides.length === 0
+        ? 0
+        : (currentIndex - 1 + guides.length) % guides.length
+    );
+  };
+
+  const showNextGuides = () => {
+    setGuideStartIndex((currentIndex) =>
+      guides.length === 0
+        ? 0
+        : (currentIndex + 1) % guides.length
+    );
+  };
 
   return (
     <section className="flex flex-col gap-8">
@@ -332,9 +358,32 @@ export default function HomeNews() {
               REHBERLER
             </div>
 
-            <span className="text-[11px] text-zinc-600 font-medium">
-              Son 2 rehber
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] text-zinc-600 font-medium">
+                {guides.length} rehber
+              </span>
+
+              {guides.length > 1 && (
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={showPreviousGuides}
+                    aria-label="Önceki rehberleri göster"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/70 text-zinc-400 transition-colors hover:border-cyan-500/40 hover:text-cyan-400"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={showNextGuides}
+                    aria-label="Sonraki rehberleri göster"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/70 text-zinc-400 transition-colors hover:border-cyan-500/40 hover:text-cyan-400"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {guides.length === 0 ? (
@@ -345,7 +394,7 @@ export default function HomeNews() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {guides.map((guide) => (
+              {visibleGuides.map((guide) => (
                 <Link
                   key={guide.id}
                   href={`/rehber/${guide.slug}`}
