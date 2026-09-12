@@ -132,14 +132,14 @@ export default function HomePage() {
     <div className="max-w-[1400px] mx-auto px-6 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-8 flex flex-col gap-8">
-          <section className="relative overflow-hidden p-8 sm:p-10 border border-zinc-800/80 rounded-3xl bg-zinc-900/50 flex flex-col items-start gap-5 shadow-[0_0_50px_rgba(8,145,178,0.08)]">
+          <section className="relative overflow-hidden p-6 sm:p-7 border border-zinc-800/80 rounded-3xl bg-zinc-900/50 flex flex-col items-start gap-3 shadow-[0_0_40px_rgba(8,145,178,0.07)]">
             <div
               aria-hidden="true"
-              className="absolute -right-24 -top-28 h-72 w-72 rounded-full bg-cyan-500/15 blur-3xl motion-safe:animate-pulse"
+              className="absolute -right-20 -top-24 h-56 w-56 rounded-full bg-cyan-500/15 blur-3xl motion-safe:animate-pulse"
             />
             <div
               aria-hidden="true"
-              className="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-blue-600/10 blur-3xl motion-safe:animate-pulse"
+              className="absolute -bottom-28 left-1/3 h-48 w-48 rounded-full bg-blue-600/10 blur-3xl motion-safe:animate-pulse"
             />
             <div
               aria-hidden="true"
@@ -151,30 +151,30 @@ export default function HomePage() {
               YENİ NESİL TEKNOLOJİ ÜSSÜ
             </div>
 
-            <h1 className="relative max-w-3xl text-3xl md:text-5xl font-extrabold leading-[1.1] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-cyan-400">
+            <h1 className="relative max-w-3xl text-2xl md:text-3xl font-extrabold leading-[1.15] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-cyan-400">
               Donanım Haberleri, PC Toplama ve Hesaplama Araçları
             </h1>
 
-            <p className="relative text-zinc-300 text-sm md:text-base leading-relaxed max-w-2xl">
+            <p className="relative text-zinc-300 text-sm leading-relaxed max-w-2xl">
               Güncel donanım gelişmelerini takip et; işlemci, ekran kartı ve
               sistem bileşenlerini karşılaştır. PC toplama, FPS, darboğaz ve
               PSU hesaplama araçlarıyla ihtiyaçlarına uygun sistemi daha
               bilinçli seç.
             </p>
 
-            <div className="relative flex flex-wrap gap-2 pt-1 text-[11px] font-bold uppercase tracking-wide text-zinc-300">
-              {[
-                "Donanım Haberleri",
-                "PC Toplama",
-                "Akıllı Hesaplama",
-              ].map((label) => (
-                <span
-                  key={label}
-                  className="rounded-full border border-zinc-700/80 bg-zinc-950/40 px-3 py-1.5 backdrop-blur-sm"
-                >
-                  {label}
-                </span>
-              ))}
+            <div className="relative flex flex-wrap gap-3 pt-1">
+              <Link
+                href="/araclar/pc-oneri"
+                className="rounded-xl bg-cyan-400 px-4 py-2 text-xs font-extrabold text-zinc-950 transition-colors hover:bg-cyan-300"
+              >
+                Sistemini Oluştur
+              </Link>
+              <Link
+                href="/news"
+                className="rounded-xl border border-zinc-700 bg-zinc-950/40 px-4 py-2 text-xs font-extrabold text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
+              >
+                Haberleri İncele
+              </Link>
             </div>
           </section>
 
