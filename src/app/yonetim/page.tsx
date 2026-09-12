@@ -24,6 +24,7 @@ import {
   Loader2,
   PackageSearch,
   AlertTriangle,
+  BarChart3,
 } from "lucide-react";
 
 import { supabase } from "../lib/supabase";

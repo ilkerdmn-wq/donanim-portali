@@ -18,6 +18,7 @@ import {
 
 import HomeNews from "./components/HomeNews";
 import SidebarGuides from "./components/SidebarGuides";
+import HomePoll from "./components/HomePoll";
 
 const SITE_URL =
   "https://donanimportali.com";
@@ -249,6 +250,7 @@ export default function HomePage() {
             </div>
           </div>
 
+          <HomePoll />
           <SidebarGuides />
         </div>
       </div>

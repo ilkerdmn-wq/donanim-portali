@@ -1,0 +1,6 @@
+create table if not exists public.polls (id uuid primary key default gen_random_uuid(), question text not null check (char_length(question) <= 160), description text not null default '' check (char_length(description) <= 300), status text not null default 'active' check (status in ('draft','active','closed')), starts_at timestamptz not null default now(), ends_at timestamptz not null, created_at timestamptz not null default now());
+create table if not exists public.poll_options (id uuid primary key default gen_random_uuid(), poll_id uuid not null references public.polls(id) on delete cascade, label text not null check (char_length(label) between 1 and 80), position smallint not null check (position between 1 and 3), unique (poll_id, position));
+create table if not exists public.poll_votes (id uuid primary key default gen_random_uuid(), poll_id uuid not null references public.polls(id) on delete cascade, option_id uuid not null references public.poll_options(id) on delete cascade, visitor_id uuid not null, created_at timestamptz not null default now(), unique (poll_id, visitor_id));
+alter table public.polls enable row level security;
+alter table public.poll_options enable row level security;
+alter table public.poll_votes enable row level security;
