@@ -988,7 +988,7 @@ export default function FpsHesaplayiciPage() {
       {!loading &&
         !error && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div className="lg:col-span-5 p-6 bg-zinc-900 border border-zinc-800 rounded-3xl flex flex-col gap-6 shadow-sm sticky top-24">
+            <div className="lg:col-span-5 p-6 bg-zinc-900 border border-zinc-800 rounded-3xl flex flex-col gap-6 shadow-sm lg:sticky lg:top-24">
               <div className="flex items-center gap-2 text-cyan-400 text-sm font-bold tracking-wider">
                 <Gamepad2
                   size={18}
