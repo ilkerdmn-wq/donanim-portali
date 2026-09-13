@@ -595,6 +595,14 @@ function PortalShell({
             <Link href="/kullanim-kosullari" className="hover:text-cyan-400 transition-colors">Kullanım Koşulları</Link>
             <Link href="/sorumluluk-reddi" className="hover:text-cyan-400 transition-colors">Sorumluluk Reddi</Link>
             <Link href="/iletisim" className="hover:text-cyan-400 transition-colors">İletişim</Link>
+            <a
+              href="https://x.com/DonanimPortalii"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-cyan-400 transition-colors"
+            >
+              X&apos;te takip et ↗
+            </a>
           </nav>
         </div>
       </footer>
