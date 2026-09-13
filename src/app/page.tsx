@@ -38,12 +38,21 @@ export const metadata: Metadata = {
     title: "Donanım Portalı",
     description:
       "Güncel donanım haberleri, PC toplama araçları ve sistem analiz rehberleri.",
+    images: [
+      {
+        url: "/social-card.png",
+        width: 1200,
+        height: 630,
+        alt: "Donanım Portalı",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Donanım Portalı",
     description:
       "Güncel donanım haberleri, PC toplama araçları ve sistem analiz rehberleri.",
+    images: ["/social-card.png"],
   },
 };
 

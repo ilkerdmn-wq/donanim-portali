@@ -97,6 +97,14 @@ export const metadata: Metadata = {
     title: "Donanım Portalı",
     description:
       "Güncel donanım haberleri, PC toplama ve sistem analiz araçları.",
+    images: [
+      {
+        url: "/social-card.png",
+        width: 1200,
+        height: 630,
+        alt: "Donanım Portalı",
+      },
+    ],
   },
 
   twitter: {
@@ -104,6 +112,7 @@ export const metadata: Metadata = {
     title: "Donanım Portalı",
     description:
       "Güncel donanım haberleri, PC toplama ve sistem analiz araçları.",
+    images: ["/social-card.png"],
   },
 
   robots: {
