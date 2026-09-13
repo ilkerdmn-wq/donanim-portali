@@ -201,11 +201,7 @@ export async function generateMetadata({
       description,
 
       images:
-        guide.cover_image_url
-          ? [
-              guide.cover_image_url,
-            ]
-          : undefined,
+        ["/social-card.png"],
     },
   };
 }

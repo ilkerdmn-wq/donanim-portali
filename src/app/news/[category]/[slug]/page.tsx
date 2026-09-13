@@ -260,11 +260,7 @@ export async function generateMetadata({
       description,
 
       images:
-        news.image_url
-          ? [
-              news.image_url,
-            ]
-          : undefined,
+        ["/social-card.png"],
     },
   };
 }
