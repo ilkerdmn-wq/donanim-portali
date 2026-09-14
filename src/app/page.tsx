@@ -186,6 +186,12 @@ export default function HomePage() {
               >
                 Haberleri İncele
               </Link>
+              <Link
+                href="/incelemeler"
+                className="rounded-xl border border-cyan-900/60 bg-cyan-950/30 px-4 py-2 text-xs font-extrabold text-cyan-400 transition-colors hover:border-cyan-500/50 hover:text-cyan-300"
+              >
+                Laptop İncelemeleri
+              </Link>
             </div>
           </section>
 

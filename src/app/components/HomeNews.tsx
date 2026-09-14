@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "../lib/supabase";
+import HomeReviews from "./HomeReviews";
 
 type NewsItem = {
   id: number;
@@ -349,6 +350,8 @@ export default function HomeNews() {
           </div>
         </div>
       )}
+
+      <HomeReviews />
 
       {!loading && (
         <div className="flex flex-col gap-4 pt-1">
