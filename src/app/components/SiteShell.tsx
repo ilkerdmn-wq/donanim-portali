@@ -240,6 +240,11 @@ function PortalShell({
       icon: BookOpen,
     },
     {
+      href: "/incelemeler",
+      label: "İncelemeler",
+      icon: BookOpen,
+    },
+    {
       href: "/arama",
       label: "Ara",
       icon: Search,

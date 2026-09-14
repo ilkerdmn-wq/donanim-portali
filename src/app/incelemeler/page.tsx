@@ -1,0 +1,6 @@
+import type {Metadata} from "next";
+import {publishedReviews} from "@/app/lib/reviews-server";
+import ReviewCard from "@/app/components/ReviewCard";
+export const dynamic="force-dynamic";
+export const metadata:Metadata={title:"Laptop İncelemeleri",description:"Laptopların teknik özellikleri, kullanım alanları, güçlü ve sınırlı tarafları.",alternates:{canonical:"https://donanimportali.com/incelemeler"}};
+export default async function ReviewsPage(){const reviews=await publishedReviews();return <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 md:py-14"><header className="rounded-3xl border border-zinc-800 bg-zinc-900/40 p-6 md:p-8"><p className="text-[10px] font-black tracking-widest text-cyan-400">LAPTOP İNCELEMELERİ</p><h1 className="mt-5 text-3xl md:text-5xl font-black text-white">Donanımı tanı, ihtiyacına göre değerlendir.</h1><p className="mt-4 text-zinc-400 leading-7">Laptopların özelliklerini kullanım açısından ele alan incelemeler; güçlü yönler, sınırlı taraflar ve teknik ayrıntılar.</p></header><h2 className="mt-8 mb-5 text-2xl font-black">Güncel incelemeler</h2>{reviews.length?<div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">{reviews.map(r=><ReviewCard key={r.id} review={r}/>)}</div>:<p className="rounded-3xl border border-zinc-800 p-10 text-center text-zinc-400">Henüz yayımlanmış inceleme bulunmuyor.</p>}</main>}

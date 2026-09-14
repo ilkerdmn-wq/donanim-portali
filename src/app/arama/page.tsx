@@ -36,6 +36,8 @@ type GuideResult = {
   updated_at: string;
 };
 
+type ReviewResult = GuideResult;
+
 type HardwareResult = {
   id: number;
   name: string;
@@ -88,6 +90,7 @@ export default function SearchPage() {
     useState<NewsResult[]>([]);
   const [guides, setGuides] =
     useState<GuideResult[]>([]);
+  const [reviews, setReviews] = useState<ReviewResult[]>([]);
   const [hardware, setHardware] =
     useState<HardwareResult[]>([]);
   const [loading, setLoading] =
@@ -98,6 +101,7 @@ export default function SearchPage() {
   const totalResults =
     news.length +
     guides.length +
+    reviews.length +
     hardware.length;
 
   const hasSearched =
@@ -139,6 +143,7 @@ export default function SearchPage() {
         const [
           newsResponse,
           guideResponse,
+          reviewResponse,
           hardwareResponse,
         ] = await Promise.all([
           supabase
@@ -169,6 +174,14 @@ export default function SearchPage() {
               "updated_at",
               { ascending: false }
             )
+            .limit(10),
+
+          supabase
+            .from("reviews")
+            .select("id,title,slug,excerpt,category,updated_at")
+            .eq("published", true)
+            .or(`title.ilike.${pattern},subtitle.ilike.${pattern},excerpt.ilike.${pattern},content.ilike.${pattern}`)
+            .order("updated_at", { ascending: false })
             .limit(10),
 
           supabase
@@ -213,6 +226,10 @@ export default function SearchPage() {
           );
         }
 
+        if (reviewResponse.error) {
+          console.error("Arama inceleme hatası:", reviewResponse.error);
+        }
+
         setNews(
           (newsResponse.data ||
             []) as NewsResult[]
@@ -222,6 +239,8 @@ export default function SearchPage() {
           (guideResponse.data ||
             []) as GuideResult[]
         );
+
+        setReviews((reviewResponse.data || []) as ReviewResult[]);
 
         setHardware(
           (hardwareResponse.data ||
@@ -424,6 +443,14 @@ export default function SearchPage() {
                           />
                         )
                       )}
+                    </ResultSection>
+                  )}
+
+                  {reviews.length > 0 && (
+                    <ResultSection icon={BookOpen} title="İncelemeler">
+                      {reviews.map((item) => (
+                        <ResultCard key={`review-${item.id}`} href={`/incelemeler/${item.slug}`} eyebrow={item.category || "Laptop"} title={item.title} description={item.excerpt} />
+                      ))}
                     </ResultSection>
                   )}
 

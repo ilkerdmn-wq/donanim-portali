@@ -12,6 +12,13 @@ type GuideRow = {
   created_at: string | null;
 };
 
+type ReviewRow = {
+  slug: string;
+  updated_at: string | null;
+  published_at: string | null;
+  created_at: string | null;
+};
+
 const SITE_URL =
   "https://donanimportali.com";
 
@@ -194,6 +201,24 @@ async function getPublishedGuides(): Promise<
       error
     );
 
+    return [];
+  }
+}
+
+async function getPublishedReviews(): Promise<ReviewRow[]> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !anonKey) return [];
+  const url = new URL(`${supabaseUrl}/rest/v1/reviews`);
+  url.searchParams.set("select", "slug,updated_at,published_at,created_at");
+  url.searchParams.set("published", "eq.true");
+  try {
+    const response = await fetch(url.toString(), {
+      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+      next: { revalidate: 300 },
+    });
+    return response.ok ? ((await response.json()) as ReviewRow[]) : [];
+  } catch {
     return [];
   }
 }
@@ -456,6 +481,8 @@ export default async function sitemap(): Promise<
   const guides =
     await getPublishedGuides();
 
+  const reviews = await getPublishedReviews();
+
   const newsPages:
     MetadataRoute.Sitemap =
     news
@@ -528,5 +555,12 @@ export default async function sitemap(): Promise<
     ...staticPages,
     ...newsPages,
     ...guidePages,
+    { url: `${SITE_URL}/incelemeler`, changeFrequency: "weekly" as const, priority: 0.8 },
+    ...reviews.filter((item) => item.slug).map((item) => ({
+      url: `${SITE_URL}/incelemeler/${encodeURIComponent(item.slug)}`,
+      lastModified: item.updated_at ? new Date(item.updated_at) : item.published_at ? new Date(item.published_at) : item.created_at ? new Date(item.created_at) : undefined,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
   ];
 }

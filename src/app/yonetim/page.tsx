@@ -71,6 +71,12 @@ const hardwareCards = [
 
 const contentCards = [
   {
+    title: "İnceleme Yönetimi",
+    description: "Laptop incelemelerini oluştur, düzenle ve yayınla.",
+    href: "/yonetim/incelemeler",
+    icon: BookOpen,
+  },
+  {
     title: "Haber Yönetimi",
     description: "Yeni haber ekle, mevcut haberleri düzenle ve yayınla.",
     href: "/yonetim/haberler",
