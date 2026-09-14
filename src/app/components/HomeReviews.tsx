@@ -92,9 +92,9 @@ export default function HomeReviews() {
           {otherReviews.length > 0 && (
             <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/25 p-2">
               <div className="px-2.5 pb-2 pt-1 text-[10px] font-black uppercase tracking-wider text-zinc-500">Son İncelemeler</div>
-              <div className="max-h-[480px] space-y-2 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:#3f3f46_transparent] [scrollbar-width:thin]">
+              <div tabIndex={0} aria-label="Son incelemeler, diğer incelemeler için aşağı kaydırın" className="max-h-[322px] space-y-2 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:#3f3f46_transparent] [scrollbar-width:thin] focus-visible:outline-2 focus-visible:outline-cyan-400">
                 {otherReviews.map(review => (
-                  <Link key={review.id} href={`/incelemeler/${review.slug}`} className="group flex items-center gap-4 rounded-xl border border-zinc-800/70 bg-zinc-900/30 p-3 transition-all hover:border-cyan-500/30 hover:bg-zinc-900/60">
+                  <Link key={review.id} href={`/incelemeler/${review.slug}`} className="group flex h-[102px] items-center gap-4 rounded-xl border border-zinc-800/70 bg-zinc-900/30 p-3 transition-all hover:border-cyan-500/30 hover:bg-zinc-900/60">
                     <div className="flex h-[76px] w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:w-[112px]">
                       {review.image_url ? <img src={review.image_url} alt={review.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" /> : <Laptop size={26} className="text-zinc-800" />}
                     </div>
