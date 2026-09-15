@@ -25,6 +25,7 @@ import {
   PackageSearch,
   AlertTriangle,
   BarChart3,
+  Laptop2,
 } from "lucide-react";
 
 import { supabase } from "../lib/supabase";
@@ -99,6 +100,12 @@ const contentCards = [
     description: "SEO rehberlerini oluştur, düzenle ve yayınla.",
     href: "/yonetim/rehberler",
     icon: BookOpen,
+  },
+  {
+    title: "Laptop Yönetimi",
+    description: "İncelenen laptopları ve karşılaştırma özelliklerini elle ekle.",
+    href: "/yonetim/laptoplar",
+    icon: Laptop2,
   },
   {
     title: "Oylama Yönetimi",

@@ -223,6 +223,20 @@ async function getPublishedReviews(): Promise<ReviewRow[]> {
   }
 }
 
+async function hasPublishedLaptopComparison() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !anonKey) return false;
+  try {
+    const url = new URL(`${supabaseUrl}/rest/v1/laptops`);
+    url.searchParams.set("select", "id");
+    url.searchParams.set("published", "eq.true");
+    url.searchParams.set("limit", "2");
+    const response = await fetch(url, {headers:{apikey:anonKey,Authorization:`Bearer ${anonKey}`},next:{revalidate:300}});
+    return response.ok && ((await response.json()) as {id:string}[]).length >= 2;
+  } catch { return false; }
+}
+
 export default async function sitemap(): Promise<
   MetadataRoute.Sitemap
 > {
@@ -475,13 +489,7 @@ export default async function sitemap(): Promise<
       },
     ];
 
-  const news =
-    await getPublishedNews();
-
-  const guides =
-    await getPublishedGuides();
-
-  const reviews = await getPublishedReviews();
+  const [news,guides,reviews,showLaptopComparison] = await Promise.all([getPublishedNews(),getPublishedGuides(),getPublishedReviews(),hasPublishedLaptopComparison()]);
 
   const newsPages:
     MetadataRoute.Sitemap =
@@ -553,6 +561,7 @@ export default async function sitemap(): Promise<
 
   return [
     ...staticPages,
+    ...(showLaptopComparison ? [{url:`${SITE_URL}/laptop-karsilastirma`,changeFrequency:"monthly" as const,priority:0.8}] : []),
     ...newsPages,
     ...guidePages,
     { url: `${SITE_URL}/incelemeler`, changeFrequency: "weekly" as const, priority: 0.8 },
