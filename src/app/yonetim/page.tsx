@@ -102,8 +102,8 @@ const contentCards = [
     icon: BookOpen,
   },
   {
-    title: "Laptop Yönetimi",
-    description: "İncelenen laptopları ve karşılaştırma özelliklerini elle ekle.",
+    title: "Karşılaştırma Yönetimi",
+    description: "Laptopları ve özelliklerini yan yana elle gir, üstün değerleri işaretle.",
     href: "/yonetim/laptoplar",
     icon: Laptop2,
   },

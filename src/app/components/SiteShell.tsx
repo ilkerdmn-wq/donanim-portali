@@ -19,6 +19,7 @@ import {
   Layers,
   Mail,
   BookOpen,
+  Scale,
   Search,
   Construction,
   LogOut,
@@ -243,6 +244,11 @@ function PortalShell({
       href: "/incelemeler",
       label: "İncelemeler",
       icon: BookOpen,
+    },
+    {
+      href: "/laptop-karsilastirma",
+      label: "Karşılaştırma",
+      icon: Scale,
     },
     {
       href: "/arama",

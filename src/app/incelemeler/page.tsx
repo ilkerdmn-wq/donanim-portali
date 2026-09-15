@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { publishedReviews } from "@/app/lib/reviews-server";
 import ReviewCard from "@/app/components/ReviewCard";
+import {readComparison} from "@/app/lib/manual-comparison-server";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -12,17 +13,7 @@ export const metadata: Metadata = {
 };
 
 async function hasLaptopComparison() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !anonKey) return false;
-  try {
-    const url = new URL(`${supabaseUrl}/rest/v1/laptops`);
-    url.searchParams.set("select", "id");
-    url.searchParams.set("published", "eq.true");
-    url.searchParams.set("limit", "2");
-    const response = await fetch(url, { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` }, cache: "no-store" });
-    return response.ok && ((await response.json()) as { id: string }[]).length >= 2;
-  } catch { return false; }
+  try { return (await readComparison())?.published===true; } catch { return false; }
 }
 
 export default async function ReviewsPage() {

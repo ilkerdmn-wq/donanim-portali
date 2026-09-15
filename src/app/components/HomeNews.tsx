@@ -16,6 +16,7 @@ import {
 
 import { supabase } from "../lib/supabase";
 import HomeReviews from "./HomeReviews";
+import HomeComparison from "./HomeComparison";
 
 type NewsItem = {
   id: number;
@@ -352,6 +353,7 @@ export default function HomeNews() {
       )}
 
       <HomeReviews />
+      <HomeComparison />
 
       {!loading && (
         <div className="flex flex-col gap-4 pt-1">
