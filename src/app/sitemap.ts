@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import {readComparison} from "@/app/lib/manual-comparison-server";
+import { listComparisons } from "@/app/lib/manual-comparison-server";
 
 type NewsRow = {
   slug: string;
@@ -224,9 +224,6 @@ async function getPublishedReviews(): Promise<ReviewRow[]> {
   }
 }
 
-async function hasPublishedLaptopComparison() {
-  try { return (await readComparison())?.published===true; } catch { return false; }
-}
 
 export default async function sitemap(): Promise<
   MetadataRoute.Sitemap
@@ -443,6 +440,22 @@ export default async function sitemap(): Promise<
 
       {
         url:
+          `${SITE_URL}/karsilastirma`,
+        changeFrequency:
+          "weekly",
+        priority: 0.85,
+      },
+
+      {
+        url:
+          `${SITE_URL}/karsilastirma/laptop`,
+        changeFrequency:
+          "weekly",
+        priority: 0.85,
+      },
+
+      {
+        url:
           `${SITE_URL}/iletisim`,
         changeFrequency:
           "monthly",
@@ -480,7 +493,12 @@ export default async function sitemap(): Promise<
       },
     ];
 
-  const [news,guides,reviews,showLaptopComparison] = await Promise.all([getPublishedNews(),getPublishedGuides(),getPublishedReviews(),hasPublishedLaptopComparison()]);
+  const [news, guides, reviews, comparisons] = await Promise.all([
+    getPublishedNews(),
+    getPublishedGuides(),
+    getPublishedReviews(),
+    listComparisons(),
+  ]);
 
   const newsPages:
     MetadataRoute.Sitemap =
@@ -550,9 +568,44 @@ export default async function sitemap(): Promise<
         })
       );
 
+  const comparisonPages:
+    MetadataRoute.Sitemap =
+    comparisons
+      .filter(
+        (item) =>
+          item.published &&
+          item.slug
+      )
+      .map(
+        (item) => ({
+          url:
+            `${SITE_URL}/karsilastirma/laptop/` +
+            `${encodeURIComponent(
+              item.slug
+            )}`,
+
+          lastModified:
+            item.updatedAt
+              ? new Date(
+                  item.updatedAt
+                )
+              : item.createdAt
+              ? new Date(
+                  item.createdAt
+                )
+              : undefined,
+
+          changeFrequency:
+            "monthly" as const,
+
+          priority:
+            0.8,
+        })
+      );
+
   return [
     ...staticPages,
-    ...(showLaptopComparison ? [{url:`${SITE_URL}/laptop-karsilastirma`,changeFrequency:"monthly" as const,priority:0.8}] : []),
+    ...comparisonPages,
     ...newsPages,
     ...guidePages,
     { url: `${SITE_URL}/incelemeler`, changeFrequency: "weekly" as const, priority: 0.8 },

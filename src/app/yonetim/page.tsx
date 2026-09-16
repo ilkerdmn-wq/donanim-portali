@@ -25,7 +25,7 @@ import {
   PackageSearch,
   AlertTriangle,
   BarChart3,
-  Laptop2,
+  Scale,
 } from "lucide-react";
 
 import { supabase } from "../lib/supabase";
@@ -103,9 +103,9 @@ const contentCards = [
   },
   {
     title: "Karşılaştırma Yönetimi",
-    description: "Laptopları ve özelliklerini yan yana elle gir, üstün değerleri işaretle.",
-    href: "/yonetim/laptoplar",
-    icon: Laptop2,
+    description: "Laptop, tablet ve diğer ürün grupları için karşılaştırma içeriklerini yönet.",
+    href: "/yonetim/karsilastirmalar",
+    icon: Scale,
   },
   {
     title: "Oylama Yönetimi",

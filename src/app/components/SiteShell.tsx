@@ -246,7 +246,7 @@ function PortalShell({
       icon: BookOpen,
     },
     {
-      href: "/laptop-karsilastirma",
+      href: "/karsilastirma",
       label: "Karşılaştırma",
       icon: Scale,
     },
