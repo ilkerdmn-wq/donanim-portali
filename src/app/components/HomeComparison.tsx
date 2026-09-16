@@ -6,7 +6,36 @@ import {
   Scale,
 } from "lucide-react";
 
-export default function HomeComparison() {
+import {
+  connection,
+} from "next/server";
+
+import {
+  listComparisons,
+} from "@/app/lib/manual-comparison-server";
+
+export default async function HomeComparison() {
+  /*
+    Ana sayfada yeni yayınlanan karşılaştırmanın
+    build anındaki cache'e takılmaması için
+    isteğe bağlı olarak dinamik render ediyoruz.
+  */
+  await connection();
+
+  const comparisons =
+    await listComparisons();
+
+  const latestComparison =
+    comparisons.find(
+      (comparison) =>
+        comparison.published
+    ) || null;
+
+  const targetUrl =
+    latestComparison
+      ? `/karsilastirma/laptop/${latestComparison.slug}`
+      : "/karsilastirma/laptop";
+
   return (
     <section
       aria-labelledby="home-comparison-title"
@@ -31,7 +60,7 @@ export default function HomeComparison() {
       </div>
 
       <Link
-        href="/karsilastirma/laptop"
+        href={targetUrl}
         className="group relative overflow-hidden rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 transition-all hover:border-cyan-500/40"
       >
         <div className="p-6 md:p-8">
@@ -40,49 +69,104 @@ export default function HomeComparison() {
           </span>
 
           <h3 className="mt-5 text-2xl font-black leading-tight text-white transition-colors group-hover:text-cyan-300 md:text-4xl">
-            Laptop Karşılaştırmaları
+            {latestComparison
+              ? latestComparison.title
+              : "Laptop Karşılaştırmaları"}
           </h3>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-            İncelediğimiz laptop modellerini teknik özellikleri üzerinden
-            yan yana karşılaştırın.
+            {latestComparison?.summary ||
+              "İncelediğimiz laptop modellerini teknik özellikleri üzerinden yan yana karşılaştırın."}
           </p>
 
-          <div className="mt-7 flex items-center justify-center gap-3">
-            <div className="flex min-w-0 flex-1 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
-              <div className="text-center">
-                <div className="mx-auto flex h-24 w-full max-w-[180px] items-center justify-center rounded-xl bg-white sm:h-32">
-                  <Laptop
-                    size={42}
-                    className="text-zinc-400"
-                  />
-                </div>
+          {latestComparison ? (
+            <div className="mt-7 flex items-stretch justify-center gap-2 sm:gap-3">
+              {latestComparison.columns.map(
+                (
+                  column,
+                  index
+                ) => (
+                  <div
+                    key={
+                      column.id
+                    }
+                    className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3"
+                  >
+                    {index >
+                      0 && (
+                      <span className="shrink-0 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2 py-1 text-xs font-black text-cyan-300">
+                        VS
+                      </span>
+                    )}
 
-                <p className="mt-3 text-xs font-black text-white sm:text-sm">
-                  Laptop 1
-                </p>
+                    <div className="min-w-0 flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-3 text-center sm:p-4">
+                      <div className="flex h-28 items-center justify-center overflow-hidden rounded-xl bg-white p-2 sm:h-40">
+                        {column.imageUrl ? (
+                          <img
+                            src={
+                              column.imageUrl
+                            }
+                            alt={
+                              column.name
+                            }
+                            className="h-full w-full object-contain"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <Laptop
+                            size={38}
+                            className="text-zinc-400"
+                          />
+                        )}
+                      </div>
+
+                      <p className="mt-3 break-words text-xs font-black leading-5 text-white sm:text-sm">
+                        {
+                          column.name
+                        }
+                      </p>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          ) : (
+            <div className="mt-7 flex items-center justify-center gap-3">
+              <div className="flex min-w-0 flex-1 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
+                <div className="text-center">
+                  <div className="mx-auto flex h-24 w-full max-w-[180px] items-center justify-center rounded-xl bg-white sm:h-32">
+                    <Laptop
+                      size={42}
+                      className="text-zinc-400"
+                    />
+                  </div>
+
+                  <p className="mt-3 text-xs font-black text-white sm:text-sm">
+                    Laptop 1
+                  </p>
+                </div>
+              </div>
+
+              <span className="shrink-0 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-xs font-black text-cyan-300">
+                VS
+              </span>
+
+              <div className="flex min-w-0 flex-1 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
+                <div className="text-center">
+                  <div className="mx-auto flex h-24 w-full max-w-[180px] items-center justify-center rounded-xl bg-white sm:h-32">
+                    <Laptop
+                      size={42}
+                      className="text-zinc-400"
+                    />
+                  </div>
+
+                  <p className="mt-3 text-xs font-black text-white sm:text-sm">
+                    Laptop 2
+                  </p>
+                </div>
               </div>
             </div>
-
-            <span className="shrink-0 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-xs font-black text-cyan-300">
-              VS
-            </span>
-
-            <div className="flex min-w-0 flex-1 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
-              <div className="text-center">
-                <div className="mx-auto flex h-24 w-full max-w-[180px] items-center justify-center rounded-xl bg-white sm:h-32">
-                  <Laptop
-                    size={42}
-                    className="text-zinc-400"
-                  />
-                </div>
-
-                <p className="mt-3 text-xs font-black text-white sm:text-sm">
-                  Laptop 2
-                </p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </Link>
 
@@ -91,9 +175,11 @@ export default function HomeComparison() {
           href="/karsilastirma/laptop"
           className="inline-flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-xs font-black text-zinc-200 transition-all hover:border-cyan-500/30 hover:text-cyan-400"
         >
-          Karşılaştırmaları gör
+          Tüm karşılaştırmalar
 
-          <ArrowRight size={14} />
+          <ArrowRight
+            size={14}
+          />
         </Link>
       </div>
     </section>
