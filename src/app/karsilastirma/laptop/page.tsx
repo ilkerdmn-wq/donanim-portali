@@ -13,6 +13,8 @@ import {
   listComparisons,
 } from "@/app/lib/manual-comparison-server";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Laptop Karşılaştırmaları | Donanım Portalı",
 
