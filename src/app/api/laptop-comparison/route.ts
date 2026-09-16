@@ -14,15 +14,20 @@ export async function GET() {
     const comparisons =
       await listComparisons();
 
-    const document =
-      comparisons.find(
+    const publishedComparisons =
+      comparisons.filter(
         (comparison) =>
           comparison.published
-      ) || null;
+      );
 
     return NextResponse.json(
       {
-        document,
+        document:
+          publishedComparisons[0] ||
+          null,
+
+        comparisons:
+          publishedComparisons,
       },
       {
         headers: {
@@ -40,6 +45,7 @@ export async function GET() {
     return NextResponse.json(
       {
         document: null,
+        comparisons: [],
       },
       {
         headers: {

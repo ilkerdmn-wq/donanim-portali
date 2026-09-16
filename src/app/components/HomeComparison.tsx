@@ -19,11 +19,11 @@ import type {
 
 export default function HomeComparison() {
   const [
-    document,
-    setDocument,
+    comparisons,
+    setComparisons,
   ] =
-    useState<ManualComparison | null>(
-      null
+    useState<ManualComparison[]>(
+      []
     );
 
   useEffect(() => {
@@ -40,16 +40,21 @@ export default function HomeComparison() {
           response.json()
       )
       .then((data) => {
-        if (active) {
-          setDocument(
-            data.document ||
-              null
-          );
+        if (!active) {
+          return;
         }
+
+        setComparisons(
+          Array.isArray(
+            data.comparisons
+          )
+            ? data.comparisons
+            : []
+        );
       })
       .catch(() => {
         if (active) {
-          setDocument(null);
+          setComparisons([]);
         }
       });
 
@@ -58,9 +63,15 @@ export default function HomeComparison() {
     };
   }, []);
 
+  const latestComparison =
+    comparisons[0] || null;
+
+  const olderComparisons =
+    comparisons.slice(1);
+
   const targetUrl =
-    document
-      ? `/karsilastirma/laptop/${document.slug}`
+    latestComparison
+      ? `/karsilastirma/laptop/${latestComparison.slug}`
       : "/karsilastirma/laptop";
 
   return (
@@ -96,19 +107,19 @@ export default function HomeComparison() {
           </span>
 
           <h3 className="mt-5 text-2xl font-black leading-tight text-white transition-colors group-hover:text-cyan-300 md:text-4xl">
-            {document
-              ? document.title
+            {latestComparison
+              ? latestComparison.title
               : "Laptop Karşılaştırmaları"}
           </h3>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-            {document?.summary ||
+            {latestComparison?.summary ||
               "İncelediğimiz laptop modellerini teknik özellikleri üzerinden yan yana karşılaştırın."}
           </p>
 
-          {document ? (
+          {latestComparison ? (
             <div className="mt-7 flex items-stretch justify-center gap-2 sm:gap-3">
-              {document.columns.map(
+              {latestComparison.columns.map(
                 (
                   column,
                   index
@@ -160,42 +171,123 @@ export default function HomeComparison() {
           ) : (
             <div className="mt-7 flex items-center justify-center gap-3">
               <div className="flex min-w-0 flex-1 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
-                <div className="text-center">
-                  <div className="mx-auto flex h-24 w-full max-w-[180px] items-center justify-center rounded-xl bg-white sm:h-32">
-                    <Laptop
-                      size={42}
-                      className="text-zinc-400"
-                    />
-                  </div>
-
-                  <p className="mt-3 text-xs font-black text-white sm:text-sm">
-                    Laptop 1
-                  </p>
-                </div>
+                <Laptop
+                  size={42}
+                  className="text-zinc-400"
+                />
               </div>
 
-              <span className="shrink-0 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-xs font-black text-cyan-300">
+              <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-xs font-black text-cyan-300">
                 VS
               </span>
 
               <div className="flex min-w-0 flex-1 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
-                <div className="text-center">
-                  <div className="mx-auto flex h-24 w-full max-w-[180px] items-center justify-center rounded-xl bg-white sm:h-32">
-                    <Laptop
-                      size={42}
-                      className="text-zinc-400"
-                    />
-                  </div>
-
-                  <p className="mt-3 text-xs font-black text-white sm:text-sm">
-                    Laptop 2
-                  </p>
-                </div>
+                <Laptop
+                  size={42}
+                  className="text-zinc-400"
+                />
               </div>
             </div>
           )}
         </div>
       </Link>
+
+      {olderComparisons.length >
+        0 && (
+        <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/30">
+          <div className="border-b border-zinc-800 px-4 py-3">
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-500">
+              Önceki Karşılaştırmalar
+            </span>
+          </div>
+
+          <div className="divide-y divide-zinc-800">
+            {olderComparisons
+              .slice(0, 4)
+              .map(
+                (
+                  comparison
+                ) => (
+                  <Link
+                    key={
+                      comparison.slug
+                    }
+                    href={`/karsilastirma/laptop/${comparison.slug}`}
+                    className="group flex items-center gap-4 p-3 transition-colors hover:bg-zinc-900/70"
+                  >
+                    <div className="flex w-[150px] shrink-0 items-center gap-1">
+                      {comparison.columns
+                        .slice(
+                          0,
+                          2
+                        )
+                        .map(
+                          (
+                            column
+                          ) => (
+                            <div
+                              key={
+                                column.id
+                              }
+                              className="flex h-14 min-w-0 flex-1 items-center justify-center overflow-hidden rounded-lg bg-white p-1"
+                            >
+                              {column.imageUrl ? (
+                                <img
+                                  src={
+                                    column.imageUrl
+                                  }
+                                  alt={
+                                    column.name
+                                  }
+                                  className="h-full w-full object-contain"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <Laptop
+                                  size={20}
+                                  className="text-zinc-400"
+                                />
+                              )}
+                            </div>
+                          )
+                        )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[9px] font-black uppercase text-cyan-400">
+                        Laptop Karşılaştırması
+                      </span>
+
+                      <h4 className="mt-1 line-clamp-1 text-xs font-black text-white transition-colors group-hover:text-cyan-300 sm:text-sm">
+                        {
+                          comparison.title
+                        }
+                      </h4>
+
+                      <p className="mt-1 line-clamp-1 text-[10px] text-zinc-600">
+                        {comparison.columns
+                          .map(
+                            (
+                              column
+                            ) =>
+                              column.name
+                          )
+                          .join(
+                            " • "
+                          )}
+                      </p>
+                    </div>
+
+                    <ArrowRight
+                      size={15}
+                      className="shrink-0 text-zinc-700 transition-all group-hover:translate-x-1 group-hover:text-cyan-400"
+                    />
+                  </Link>
+                )
+              )}
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end pt-1">
         <Link
