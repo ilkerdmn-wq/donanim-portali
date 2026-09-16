@@ -1,3 +1,10 @@
+"use client";
+
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import Link from "next/link";
 
 import {
@@ -6,34 +13,54 @@ import {
   Scale,
 } from "lucide-react";
 
-import {
-  connection,
-} from "next/server";
+import type {
+  ManualComparison,
+} from "@/app/lib/manual-comparison";
 
-import {
-  listComparisons,
-} from "@/app/lib/manual-comparison-server";
+export default function HomeComparison() {
+  const [
+    document,
+    setDocument,
+  ] =
+    useState<ManualComparison | null>(
+      null
+    );
 
-export default async function HomeComparison() {
-  /*
-    Ana sayfada yeni yayınlanan karşılaştırmanın
-    build anındaki cache'e takılmaması için
-    isteğe bağlı olarak dinamik render ediyoruz.
-  */
-  await connection();
+  useEffect(() => {
+    let active = true;
 
-  const comparisons =
-    await listComparisons();
+    void fetch(
+      "/api/laptop-comparison",
+      {
+        cache: "no-store",
+      }
+    )
+      .then(
+        (response) =>
+          response.json()
+      )
+      .then((data) => {
+        if (active) {
+          setDocument(
+            data.document ||
+              null
+          );
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setDocument(null);
+        }
+      });
 
-  const latestComparison =
-    comparisons.find(
-      (comparison) =>
-        comparison.published
-    ) || null;
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const targetUrl =
-    latestComparison
-      ? `/karsilastirma/laptop/${latestComparison.slug}`
+    document
+      ? `/karsilastirma/laptop/${document.slug}`
       : "/karsilastirma/laptop";
 
   return (
@@ -69,19 +96,19 @@ export default async function HomeComparison() {
           </span>
 
           <h3 className="mt-5 text-2xl font-black leading-tight text-white transition-colors group-hover:text-cyan-300 md:text-4xl">
-            {latestComparison
-              ? latestComparison.title
+            {document
+              ? document.title
               : "Laptop Karşılaştırmaları"}
           </h3>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-            {latestComparison?.summary ||
+            {document?.summary ||
               "İncelediğimiz laptop modellerini teknik özellikleri üzerinden yan yana karşılaştırın."}
           </p>
 
-          {latestComparison ? (
+          {document ? (
             <div className="mt-7 flex items-stretch justify-center gap-2 sm:gap-3">
-              {latestComparison.columns.map(
+              {document.columns.map(
                 (
                   column,
                   index
