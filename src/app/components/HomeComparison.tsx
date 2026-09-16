@@ -192,8 +192,7 @@ export default function HomeComparison() {
         </div>
       </Link>
 
-      {olderComparisons.length >
-        0 && (
+      {olderComparisons.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/30">
           <div className="border-b border-zinc-800 px-4 py-3">
             <span className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-500">
@@ -201,44 +200,28 @@ export default function HomeComparison() {
             </span>
           </div>
 
-          <div className="divide-y divide-zinc-800">
-            {olderComparisons
-              .slice(0, 4)
-              .map(
-                (
-                  comparison
-                ) => (
+          <div className="max-h-[240px] overflow-y-auto">
+            <div className="divide-y divide-zinc-800">
+              {olderComparisons.map(
+                (comparison) => (
                   <Link
-                    key={
-                      comparison.slug
-                    }
+                    key={comparison.slug}
                     href={`/karsilastirma/laptop/${comparison.slug}`}
-                    className="group flex items-center gap-4 p-3 transition-colors hover:bg-zinc-900/70"
+                    className="group flex min-h-[80px] items-center gap-4 p-3 transition-colors hover:bg-zinc-900/70"
                   >
                     <div className="flex w-[150px] shrink-0 items-center gap-1">
                       {comparison.columns
-                        .slice(
-                          0,
-                          2
-                        )
+                        .slice(0, 2)
                         .map(
-                          (
-                            column
-                          ) => (
+                          (column) => (
                             <div
-                              key={
-                                column.id
-                              }
+                              key={column.id}
                               className="flex h-14 min-w-0 flex-1 items-center justify-center overflow-hidden rounded-lg bg-white p-1"
                             >
                               {column.imageUrl ? (
                                 <img
-                                  src={
-                                    column.imageUrl
-                                  }
-                                  alt={
-                                    column.name
-                                  }
+                                  src={column.imageUrl}
+                                  alt={column.name}
                                   className="h-full w-full object-contain"
                                   loading="lazy"
                                 />
@@ -259,22 +242,16 @@ export default function HomeComparison() {
                       </span>
 
                       <h4 className="mt-1 line-clamp-1 text-xs font-black text-white transition-colors group-hover:text-cyan-300 sm:text-sm">
-                        {
-                          comparison.title
-                        }
+                        {comparison.title}
                       </h4>
 
                       <p className="mt-1 line-clamp-1 text-[10px] text-zinc-600">
                         {comparison.columns
                           .map(
-                            (
-                              column
-                            ) =>
+                            (column) =>
                               column.name
                           )
-                          .join(
-                            " • "
-                          )}
+                          .join(" • ")}
                       </p>
                     </div>
 
@@ -285,6 +262,7 @@ export default function HomeComparison() {
                   </Link>
                 )
               )}
+            </div>
           </div>
         </div>
       )}
