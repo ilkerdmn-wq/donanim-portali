@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { publishedReviews } from "@/app/lib/reviews-server";
-import ReviewCard from "@/app/components/ReviewCard";
+import ReviewsSearchGrid from "../components/ReviewsSearchGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -12,14 +12,12 @@ export const metadata: Metadata = {
   description:
     "Laptopların teknik özellikleri, kullanım alanları, güçlü ve sınırlı tarafları.",
   alternates: {
-    canonical:
-      "https://donanimportali.com/incelemeler",
+    canonical: "https://donanimportali.com/incelemeler",
   },
 };
 
 export default async function ReviewsPage() {
-  const reviews =
-    await publishedReviews();
+  const reviews = await publishedReviews();
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 md:py-14">
@@ -59,30 +57,7 @@ export default async function ReviewsPage() {
         />
       </Link>
 
-      <h2 className="mb-5 mt-8 text-2xl font-black">
-        Güncel incelemeler
-      </h2>
-
-      {reviews.length ? (
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {reviews.map(
-            (review) => (
-              <ReviewCard
-                key={
-                  review.id
-                }
-                review={
-                  review
-                }
-              />
-            )
-          )}
-        </div>
-      ) : (
-        <p className="rounded-3xl border border-zinc-800 p-10 text-center text-zinc-400">
-          Henüz yayımlanmış inceleme bulunmuyor.
-        </p>
-      )}
+      <ReviewsSearchGrid reviews={reviews} />
     </main>
   );
 }

@@ -88,7 +88,6 @@ export default function HomeComparison() {
             size={14}
             className="text-cyan-400"
           />
-
           Karşılaştırma
         </h2>
 
@@ -138,7 +137,7 @@ export default function HomeComparison() {
                     )}
 
                     <div className="min-w-0 flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-3 text-center sm:p-4">
-                      <div className="flex h-28 items-center justify-center overflow-hidden rounded-xl bg-white p-2 sm:h-40">
+                      <div className="aspect-video w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950/90 p-2 sm:p-3">
                         {column.imageUrl ? (
                           <img
                             src={
@@ -151,10 +150,12 @@ export default function HomeComparison() {
                             loading="lazy"
                           />
                         ) : (
-                          <Laptop
-                            size={38}
-                            className="text-zinc-400"
-                          />
+                          <div className="flex h-full w-full items-center justify-center">
+                            <Laptop
+                              size={38}
+                              className="text-zinc-500"
+                            />
+                          </div>
                         )}
                       </div>
 
@@ -170,22 +171,30 @@ export default function HomeComparison() {
             </div>
           ) : (
             <div className="mt-7 flex items-center justify-center gap-3">
-              <div className="flex min-w-0 flex-1 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
-                <Laptop
-                  size={42}
-                  className="text-zinc-400"
-                />
+              <div className="flex min-w-0 flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-3 sm:p-4">
+                <div className="aspect-video w-full rounded-xl border border-zinc-800 bg-zinc-950/90">
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Laptop
+                      size={42}
+                      className="text-zinc-500"
+                    />
+                  </div>
+                </div>
               </div>
 
               <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-xs font-black text-cyan-300">
                 VS
               </span>
 
-              <div className="flex min-w-0 flex-1 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
-                <Laptop
-                  size={42}
-                  className="text-zinc-400"
-                />
+              <div className="flex min-w-0 flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-3 sm:p-4">
+                <div className="aspect-video w-full rounded-xl border border-zinc-800 bg-zinc-950/90">
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Laptop
+                      size={42}
+                      className="text-zinc-500"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -207,16 +216,16 @@ export default function HomeComparison() {
                   <Link
                     key={comparison.slug}
                     href={`/karsilastirma/laptop/${comparison.slug}`}
-                    className="group flex min-h-[80px] items-center gap-4 p-3 transition-colors hover:bg-zinc-900/70"
+                    className="group flex min-h-[90px] items-center gap-4 p-3 transition-colors hover:bg-zinc-900/70"
                   >
-                    <div className="flex w-[150px] shrink-0 items-center gap-1">
+                    <div className="flex w-[180px] shrink-0 items-center gap-2 sm:w-[220px]">
                       {comparison.columns
                         .slice(0, 2)
                         .map(
                           (column) => (
                             <div
                               key={column.id}
-                              className="flex h-14 min-w-0 flex-1 items-center justify-center overflow-hidden rounded-lg bg-white p-1"
+                              className="aspect-video min-w-0 flex-1 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950/90 p-1.5"
                             >
                               {column.imageUrl ? (
                                 <img
@@ -226,10 +235,12 @@ export default function HomeComparison() {
                                   loading="lazy"
                                 />
                               ) : (
-                                <Laptop
-                                  size={20}
-                                  className="text-zinc-400"
-                                />
+                                <div className="flex h-full w-full items-center justify-center">
+                                  <Laptop
+                                    size={20}
+                                    className="text-zinc-500"
+                                  />
+                                </div>
                               )}
                             </div>
                           )
@@ -245,7 +256,7 @@ export default function HomeComparison() {
                         {comparison.title}
                       </h4>
 
-                      <p className="mt-1 line-clamp-1 text-[10px] text-zinc-600">
+                      <p className="mt-1 line-clamp-1 text-[10px] text-zinc-500">
                         {comparison.columns
                           .map(
                             (column) =>

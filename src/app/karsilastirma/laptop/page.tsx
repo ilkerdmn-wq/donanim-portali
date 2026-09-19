@@ -45,12 +45,14 @@ export default async function LaptopComparisonsPage() {
           className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-500 transition-colors hover:text-cyan-400"
         >
           <ArrowLeft size={16} />
+
           Karşılaştırma merkezine dön
         </Link>
 
         <div className="mt-7 max-w-3xl">
           <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-cyan-400 sm:text-sm">
             <Laptop size={16} />
+
             Laptop Karşılaştırmaları
           </div>
 
@@ -118,7 +120,7 @@ export default async function LaptopComparisonsPage() {
                               : "p-4"
                           }
                         >
-                          <div className="flex h-36 items-center justify-center overflow-hidden rounded-2xl border border-zinc-800 bg-white p-3 sm:h-44">
+                          <div className="aspect-video w-full overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-2 sm:p-3">
                             {column.imageUrl ? (
                               <img
                                 src={
@@ -130,9 +132,12 @@ export default async function LaptopComparisonsPage() {
                                 className="h-full w-full object-contain"
                               />
                             ) : (
-                              <span className="text-xs font-semibold text-zinc-400">
-                                Görsel yok
-                              </span>
+                              <div className="flex h-full w-full items-center justify-center">
+                                <Laptop
+                                  size={32}
+                                  className="text-zinc-500"
+                                />
+                              </div>
                             )}
                           </div>
 
