@@ -9,11 +9,6 @@ import {
   RefreshCw,
   Image as ImageIcon,
   FileText,
-  Settings,
-  Monitor,
-  Layout,
-  Database,
-  HardDrive,
 } from "lucide-react";
 
 import HomeNews from "./components/HomeNews";
@@ -105,39 +100,6 @@ const quickTools = [
   },
 ];
 
-const hardwareLists = [
-  {
-    title: "İşlemciler",
-    icon: Settings,
-    href: "/donanim/islemciler",
-  },
-  {
-    title: "Ekran Kartları",
-    icon: Monitor,
-    href: "/donanim/ekran-kartlari",
-  },
-  {
-    title: "Anakartlar",
-    icon: Layout,
-    href: "/donanim/anakartlar",
-  },
-  {
-    title: "Bellekler",
-    icon: Database,
-    href: "/donanim/bellekler",
-  },
-  {
-    title: "Güç Kaynakları",
-    icon: Zap,
-    href: "/donanim/guc-kaynaklari",
-  },
-  {
-    title: "Depolama",
-    icon: HardDrive,
-    href: "/donanim/depolama",
-  },
-];
-
 export default function HomePage() {
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-8">
@@ -180,12 +142,14 @@ export default function HomePage() {
               >
                 Sistemini Oluştur
               </Link>
+
               <Link
                 href="/news"
                 className="rounded-xl border border-zinc-700 bg-zinc-950/40 px-4 py-2 text-xs font-extrabold text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
               >
                 Haberleri İncele
               </Link>
+
               <Link
                 href="/incelemeler"
                 className="rounded-xl border border-cyan-900/60 bg-cyan-950/30 px-4 py-2 text-xs font-extrabold text-cyan-400 transition-colors hover:border-cyan-500/50 hover:text-cyan-300"
@@ -228,37 +192,6 @@ export default function HomePage() {
                           : "text-zinc-500"
                       }
                     />
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-3xl p-5 flex flex-col gap-3 shadow-sm">
-            <h2 className="text-[11px] font-bold text-zinc-400 tracking-wider uppercase px-2 mb-1">
-              DONANIM LİSTELERİ
-            </h2>
-
-            <div className="flex flex-col gap-1">
-              {hardwareLists.map((hw) => {
-                const Icon = hw.icon;
-
-                return (
-                  <Link
-                    key={hw.href}
-                    href={hw.href}
-                    className="flex items-center px-4 py-3.5 rounded-2xl hover:bg-zinc-800/40 transition-all group border border-transparent"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <Icon
-                        size={16}
-                        className="text-zinc-500 group-hover:text-zinc-300 transition-colors"
-                      />
-
-                      <span className="text-[13px] font-semibold text-zinc-300 group-hover:text-white transition-colors">
-                        {hw.title}
-                      </span>
-                    </div>
                   </Link>
                 );
               })}

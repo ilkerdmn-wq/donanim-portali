@@ -80,12 +80,28 @@ export const metadata: Metadata = {
 
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-48.png", sizes: "48x48", type: "image/png" },
-      { url: "/favicon-192.png", sizes: "192x192", type: "image/png" },
+      {
+        url: "/favicon.ico",
+        sizes: "any",
+      },
+      {
+        url: "/favicon-48.png",
+        sizes: "48x48",
+        type: "image/png",
+      },
+      {
+        url: "/favicon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
     ],
+
     apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      {
+        url: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
     ],
   },
 
@@ -95,8 +111,10 @@ export const metadata: Metadata = {
     url: "https://donanimportali.com",
     siteName: "Donanım Portalı",
     title: "Donanım Portalı",
+
     description:
       "Güncel donanım haberleri, PC toplama ve sistem analiz araçları.",
+
     images: [
       {
         url: "/social-card.png",
@@ -110,9 +128,13 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Donanım Portalı",
+
     description:
       "Güncel donanım haberleri, PC toplama ve sistem analiz araçları.",
-    images: ["/social-card.png"],
+
+    images: [
+      "/social-card.png",
+    ],
   },
 
   robots: {
@@ -147,7 +169,7 @@ export default function RootLayout({
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5297887307944126"
           crossOrigin="anonymous"
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
         />
 
         <Script
@@ -155,7 +177,10 @@ export default function RootLayout({
           strategy="afterInteractive"
         />
 
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+        >
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}

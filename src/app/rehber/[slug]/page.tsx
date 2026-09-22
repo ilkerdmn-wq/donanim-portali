@@ -508,6 +508,32 @@ function renderContent(
       continue;
     }
 
+    const imageMatch =
+      line.match(
+        /^!\[([^\]]*)\]\(([^)]+)\)$/
+      );
+
+    if (imageMatch) {
+      const [, alt, src] =
+        imageMatch;
+
+      elements.push(
+        <figure
+          key={i}
+          className="my-7 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={alt || "Rehber görseli"}
+            className="w-full h-auto object-cover"
+          />
+        </figure>
+      );
+
+      continue;
+    }
+
     if (
       line.startsWith("> ")
     ) {

@@ -207,23 +207,55 @@ async function getPublishedGuides(): Promise<
 }
 
 async function getPublishedReviews(): Promise<ReviewRow[]> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !anonKey) return [];
-  const url = new URL(`${supabaseUrl}/rest/v1/reviews`);
-  url.searchParams.set("select", "slug,updated_at,published_at,created_at");
-  url.searchParams.set("published", "eq.true");
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  const anonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !anonKey) {
+    return [];
+  }
+
+  const url =
+    new URL(
+      `${supabaseUrl}/rest/v1/reviews`
+    );
+
+  url.searchParams.set(
+    "select",
+    "slug,updated_at,published_at,created_at"
+  );
+
+  url.searchParams.set(
+    "published",
+    "eq.true"
+  );
+
   try {
-    const response = await fetch(url.toString(), {
-      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
-      next: { revalidate: 300 },
-    });
-    return response.ok ? ((await response.json()) as ReviewRow[]) : [];
+    const response =
+      await fetch(
+        url.toString(),
+        {
+          headers: {
+            apikey: anonKey,
+            Authorization:
+              `Bearer ${anonKey}`,
+          },
+
+          next: {
+            revalidate: 300,
+          },
+        }
+      );
+
+    return response.ok
+      ? ((await response.json()) as ReviewRow[])
+      : [];
   } catch {
     return [];
   }
 }
-
 
 export default async function sitemap(): Promise<
   MetadataRoute.Sitemap
@@ -300,62 +332,6 @@ export default async function sitemap(): Promise<
         changeFrequency:
           "weekly",
         priority: 0.85,
-      },
-
-      {
-        url:
-          `${SITE_URL}/donanim`,
-        changeFrequency:
-          "daily",
-        priority: 0.9,
-      },
-
-      {
-        url:
-          `${SITE_URL}/donanim/islemciler`,
-        changeFrequency:
-          "daily",
-        priority: 0.8,
-      },
-
-      {
-        url:
-          `${SITE_URL}/donanim/ekran-kartlari`,
-        changeFrequency:
-          "daily",
-        priority: 0.8,
-      },
-
-      {
-        url:
-          `${SITE_URL}/donanim/anakartlar`,
-        changeFrequency:
-          "daily",
-        priority: 0.8,
-      },
-
-      {
-        url:
-          `${SITE_URL}/donanim/bellekler`,
-        changeFrequency:
-          "daily",
-        priority: 0.8,
-      },
-
-      {
-        url:
-          `${SITE_URL}/donanim/guc-kaynaklari`,
-        changeFrequency:
-          "daily",
-        priority: 0.8,
-      },
-
-      {
-        url:
-          `${SITE_URL}/donanim/depolama`,
-        changeFrequency:
-          "daily",
-        priority: 0.8,
       },
 
       {
@@ -463,37 +439,52 @@ export default async function sitemap(): Promise<
       },
 
       {
-        url: `${SITE_URL}/hakkimizda`,
-        changeFrequency: "monthly",
+        url:
+          `${SITE_URL}/hakkimizda`,
+        changeFrequency:
+          "monthly",
         priority: 0.5,
       },
 
       {
-        url: `${SITE_URL}/gizlilik-politikasi`,
-        changeFrequency: "monthly",
+        url:
+          `${SITE_URL}/gizlilik-politikasi`,
+        changeFrequency:
+          "monthly",
         priority: 0.4,
       },
 
       {
-        url: `${SITE_URL}/cerez-politikasi`,
-        changeFrequency: "monthly",
+        url:
+          `${SITE_URL}/cerez-politikasi`,
+        changeFrequency:
+          "monthly",
         priority: 0.4,
       },
 
       {
-        url: `${SITE_URL}/kullanim-kosullari`,
-        changeFrequency: "monthly",
+        url:
+          `${SITE_URL}/kullanim-kosullari`,
+        changeFrequency:
+          "monthly",
         priority: 0.4,
       },
 
       {
-        url: `${SITE_URL}/sorumluluk-reddi`,
-        changeFrequency: "monthly",
+        url:
+          `${SITE_URL}/sorumluluk-reddi`,
+        changeFrequency:
+          "monthly",
         priority: 0.4,
       },
     ];
 
-  const [news, guides, reviews, comparisons] = await Promise.all([
+  const [
+    news,
+    guides,
+    reviews,
+    comparisons,
+  ] = await Promise.all([
     getPublishedNews(),
     getPublishedGuides(),
     getPublishedReviews(),
@@ -608,12 +599,49 @@ export default async function sitemap(): Promise<
     ...comparisonPages,
     ...newsPages,
     ...guidePages,
-    { url: `${SITE_URL}/incelemeler`, changeFrequency: "weekly" as const, priority: 0.8 },
-    ...reviews.filter((item) => item.slug).map((item) => ({
-      url: `${SITE_URL}/incelemeler/${encodeURIComponent(item.slug)}`,
-      lastModified: item.updated_at ? new Date(item.updated_at) : item.published_at ? new Date(item.published_at) : item.created_at ? new Date(item.created_at) : undefined,
-      changeFrequency: "monthly" as const,
-      priority: 0.8,
-    })),
+
+    {
+      url:
+        `${SITE_URL}/incelemeler`,
+      changeFrequency:
+        "weekly" as const,
+      priority:
+        0.8,
+    },
+
+    ...reviews
+      .filter(
+        (item) =>
+          item.slug
+      )
+      .map(
+        (item) => ({
+          url:
+            `${SITE_URL}/incelemeler/${encodeURIComponent(
+              item.slug
+            )}`,
+
+          lastModified:
+            item.updated_at
+              ? new Date(
+                  item.updated_at
+                )
+              : item.published_at
+              ? new Date(
+                  item.published_at
+                )
+              : item.created_at
+              ? new Date(
+                  item.created_at
+                )
+              : undefined,
+
+          changeFrequency:
+            "monthly" as const,
+
+          priority:
+            0.8,
+        })
+      ),
   ];
 }

@@ -16,7 +16,6 @@ import {
   Newspaper,
   Sparkles,
   Wrench,
-  Layers,
   Mail,
   BookOpen,
   Scale,
@@ -229,11 +228,6 @@ function PortalShell({
       href: "/araclar",
       label: "Araçlar",
       icon: Wrench,
-    },
-    {
-      href: "/donanim",
-      label: "Donanım",
-      icon: Layers,
     },
     {
       href: "/rehber",
@@ -594,18 +588,55 @@ function PortalShell({
             <p className="text-sm font-extrabold text-white">
               {settings.siteName}
             </p>
+
             <p className="mt-1 text-xs leading-5 text-zinc-500 max-w-xl">
               Donanım haberleri, rehberler ve araçlar bilgi amaçlı sunulur. Satın alma öncesinde güncel ürün ve fiyat bilgilerini doğrulayın.
             </p>
           </div>
 
           <nav className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-zinc-400">
-            <Link href="/hakkimizda" className="hover:text-cyan-400 transition-colors">Hakkımızda</Link>
-            <Link href="/gizlilik-politikasi" className="hover:text-cyan-400 transition-colors">Gizlilik</Link>
-            <Link href="/cerez-politikasi" className="hover:text-cyan-400 transition-colors">Çerezler</Link>
-            <Link href="/kullanim-kosullari" className="hover:text-cyan-400 transition-colors">Kullanım Koşulları</Link>
-            <Link href="/sorumluluk-reddi" className="hover:text-cyan-400 transition-colors">Sorumluluk Reddi</Link>
-            <Link href="/iletisim" className="hover:text-cyan-400 transition-colors">İletişim</Link>
+            <Link
+              href="/hakkimizda"
+              className="hover:text-cyan-400 transition-colors"
+            >
+              Hakkımızda
+            </Link>
+
+            <Link
+              href="/gizlilik-politikasi"
+              className="hover:text-cyan-400 transition-colors"
+            >
+              Gizlilik
+            </Link>
+
+            <Link
+              href="/cerez-politikasi"
+              className="hover:text-cyan-400 transition-colors"
+            >
+              Çerezler
+            </Link>
+
+            <Link
+              href="/kullanim-kosullari"
+              className="hover:text-cyan-400 transition-colors"
+            >
+              Kullanım Koşulları
+            </Link>
+
+            <Link
+              href="/sorumluluk-reddi"
+              className="hover:text-cyan-400 transition-colors"
+            >
+              Sorumluluk Reddi
+            </Link>
+
+            <Link
+              href="/iletisim"
+              className="hover:text-cyan-400 transition-colors"
+            >
+              İletişim
+            </Link>
+
             <a
               href="https://x.com/DonanimPortalii"
               target="_blank"
