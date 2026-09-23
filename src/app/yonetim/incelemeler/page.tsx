@@ -31,7 +31,7 @@ import {
 import { SPEC_FIELDS } from "../../lib/reviews";
 import { ReviewBody, ReviewSpecs } from "../../components/ReviewContent";
 
-type BlockType = "paragraph" | "h2" | "h3" | "quote" | "list" | "image" | "table";
+type BlockType = "paragraph" | "h2" | "h3" | "quote" | "list" | "image" | "table" | "sources";
 
 type ContentBlock = {
   id: string;
@@ -214,7 +214,7 @@ export default function İncelemeYonetimiPage() {
             block?.type === "h2" ||
             block?.type === "h3" ||
             block?.type === "quote" ||
-            block?.type === "table" || block?.type === "list"
+            block?.type === "table" || block?.type === "list" || block?.type === "sources"
               ? block.type
               : "paragraph";
 
@@ -567,7 +567,9 @@ export default function İncelemeYonetimiPage() {
   }, [news, search]);
 
   const blockLabel = (type: BlockType) => {
-    if(type === "table") return "Tablo";
+    if (type === "table") return "Tablo";
+    if (type === "sources") return "Kaynaklar";
+
     switch (type) {
       case "paragraph":
         return "Paragraf";
@@ -604,6 +606,9 @@ export default function İncelemeYonetimiPage() {
     }
 
     if (block.type === "table") return <ReviewBody key={block.id} blocks={[block]} />;
+    if (block.type === "sources") {
+      return <ReviewBody key={block.id} blocks={[{ type: "sources", value: block.value }]} />;
+    }
     if (block.type === "h2") {
       return (
         <h2
@@ -985,9 +990,17 @@ export default function İncelemeYonetimiPage() {
                                     ? "Alıntı metni..."
                                     : block.type === "list"
                                     ? "Her liste maddesini yeni satıra yaz..."
+                                    : block.type === "sources"
+                                    ? "Her satıra bir kaynak bağlantısı yapıştır...\n\nhttps://www.lenovo.com/...\nhttps://www.intel.com/...\nhttps://www.nvidia.com/..."
                                     : "İnceleme metnini yaz..."
                                 }
-                                rows={block.type === "paragraph" ? 6 : 4}
+                                rows={
+                                  block.type === "paragraph"
+                                    ? 6
+                                    : block.type === "sources"
+                                    ? 7
+                                    : 4
+                                }
                                 className="w-full bg-transparent outline-none resize-none text-sm text-zinc-300 leading-7"
                               />
                             )}
@@ -1010,6 +1023,7 @@ export default function İncelemeYonetimiPage() {
                           ["list", "Liste"],
                           ["image", "Görsel"],
                           ["table", "Tablo"],
+                          ["sources", "Kaynaklar"],
                         ].map(([type, label]) => (
                           <button
                             key={type}
@@ -1019,6 +1033,8 @@ export default function İncelemeYonetimiPage() {
                           >
                             {type === "image" ? (
                               <ImageIcon size={13} />
+                            ) : type === "sources" ? (
+                              <Link2 size={13} />
                             ) : (
                               <Plus size={12} />
                             )}
