@@ -157,6 +157,7 @@ function ContentRenderer({ content }: { content: any }) {
         }
 
         if (
+          block.type === "h2" ||
           block.type === "heading" ||
           block.type === "title" ||
           block.type === "baslik"
@@ -172,6 +173,7 @@ function ContentRenderer({ content }: { content: any }) {
         }
 
         if (
+          block.type === "h3" ||
           block.type === "subheading" ||
           block.type === "subtitle" ||
           block.type === "alt-baslik"
