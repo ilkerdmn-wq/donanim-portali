@@ -228,12 +228,19 @@ function ContentRenderer({ content }: { content: any }) {
           }
 
           if (block.value) {
+            const lines = block.value
+              .split("\n")
+              .map((item) => item.trim())
+              .filter(Boolean);
+
             return (
               <ul
                 key={index}
-                className="list-disc pl-6 text-zinc-300 leading-7"
+                className="list-disc pl-6 space-y-2 text-zinc-300 leading-7"
               >
-                <li>{block.value}</li>
+                {lines.map((item, itemIndex) => (
+                  <li key={itemIndex}>{item}</li>
+                ))}
               </ul>
             );
           }
