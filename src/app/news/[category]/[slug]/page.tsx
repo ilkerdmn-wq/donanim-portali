@@ -14,9 +14,11 @@ type PageProps = {
 };
 
 type NewsSeoRow = {
+  id: number;
   title: string;
   slug: string;
   excerpt: string | null;
+  content: unknown;
   image_url: string | null;
   category: string | null;
   published: boolean;
@@ -74,7 +76,7 @@ async function getNewsBySlug(
 
   url.searchParams.set(
     "select",
-    "title,slug,excerpt,image_url,category,published,created_at"
+    "id,title,slug,excerpt,content,image_url,category,published,featured,created_at"
   );
 
   url.searchParams.set(
@@ -392,6 +394,11 @@ export default async function NewsDetailPage({
         newsSlug={
           news.slug
         }
+        initialNews={{
+          ...news,
+          category: news.category || "Genel",
+          created_at: news.created_at || "",
+        }}
       />
     </>
   );

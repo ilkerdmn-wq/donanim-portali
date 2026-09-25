@@ -262,11 +262,13 @@ function ContentRenderer({ content }: { content: any }) {
 type NewsDetailClientProps = {
   categorySlug: string;
   newsSlug: string;
+  initialNews: NewsItem;
 };
 
 export default function NewsDetailClient({
   categorySlug,
   newsSlug,
+  initialNews,
 }: NewsDetailClientProps) {
   const normalizedCategorySlug = decodeURIComponent(categorySlug)
     .toLocaleLowerCase("tr-TR")
@@ -276,91 +278,39 @@ export default function NewsDetailClient({
 
   const categoryInfo = categoryMap[normalizedCategorySlug];
 
-  const [news, setNews] = useState<NewsItem | null>(null);
+  const news = initialNews;
 
   const [otherNews, setOtherNews] = useState<NewsItem[]>([]);
 
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    if (!categoryInfo || !normalizedNewsSlug) {
-      setLoading(false);
+    if (!news) {
       return;
     }
 
-    loadNews();
-  }, [normalizedCategorySlug, normalizedNewsSlug]);
+    let active = true;
 
-  const loadNews = async () => {
-    if (!categoryInfo) return;
-
-    setLoading(true);
-
-    /*
-      ANA HABER
-    */
-
-    const { data, error } = await supabase
+    void supabase
       .from("news")
-      .select("*")
-      .eq("slug", normalizedNewsSlug)
+      .select(
+        "id,title,slug,excerpt,image_url,category,published,featured,created_at"
+      )
       .eq("published", true)
-      .maybeSingle();
+      .neq("id", news.id)
+      .limit(50)
+      .then(({ data, error }) => {
+        if (!active || error) return;
 
-    if (error) {
-      console.error(
-        "Haber yüklenirken hata:",
-        error
-      );
+        const shuffled = [...(data || [])]
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 2) as NewsItem[];
 
-      setNews(null);
-      setLoading(false);
+        setOtherNews(shuffled);
+      });
 
-      return;
-    }
-
-    if (!data) {
-      setNews(null);
-      setLoading(false);
-
-      return;
-    }
-
-    setNews(data as NewsItem);
-
-    /*
-      TÜM KATEGORİLERDEN RASTGELE DİĞER HABERLER
-    */
-
-    const { data: otherData, error: otherError } =
-      await supabase
-        .from("news")
-        .select(
-          "id,title,slug,excerpt,image_url,category,published,featured,created_at"
-        )
-        .eq("published", true)
-        .neq("id", data.id)
-        .limit(50);
-
-    if (otherError) {
-      console.error(
-        "Diğer haberler yüklenemedi:",
-        otherError
-      );
-
-      setOtherNews([]);
-    } else {
-      const shuffled = [
-        ...(otherData || []),
-      ].sort(() => Math.random() - 0.5);
-
-      setOtherNews(
-        shuffled.slice(0, 2) as NewsItem[]
-      );
-    }
-
-    setLoading(false);
-  };
+    return () => {
+      active = false;
+    };
+  }, [news]);
 
   const formattedDate = useMemo(() => {
     if (!news?.created_at) return "";
@@ -375,20 +325,6 @@ export default function NewsDetailClient({
       new Date(news.created_at)
     );
   }, [news]);
-
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-zinc-950 text-white">
-        <div className="max-w-[950px] mx-auto px-5 py-14">
-          <div className="min-h-[320px] rounded-3xl border border-zinc-800 bg-zinc-900/50 flex items-center justify-center">
-            <span className="text-sm text-zinc-600">
-              Haber yükleniyor...
-            </span>
-          </div>
-        </div>
-      </main>
-    );
-  }
 
   if (!categoryInfo) {
     return (
@@ -411,38 +347,6 @@ export default function NewsDetailClient({
             <h1 className="text-xl font-black">
               Kategori bulunamadı
             </h1>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  if (!news) {
-    return (
-      <main className="min-h-screen bg-zinc-950 text-white">
-        <div className="max-w-[950px] mx-auto px-5 py-14">
-          <Link
-            href={`/news/${normalizedCategorySlug}`}
-            className="inline-flex items-center gap-2 text-xs text-zinc-500 hover:text-cyan-400"
-          >
-            <ArrowLeft size={14} />
-            {categoryInfo.title} Haberlerine Dön
-          </Link>
-
-          <div className="mt-8 min-h-[320px] rounded-3xl border border-zinc-800 bg-zinc-900/50 flex flex-col items-center justify-center">
-            <Newspaper
-              size={42}
-              className="text-zinc-800 mb-4"
-            />
-
-            <h1 className="text-xl font-black">
-              Haber bulunamadı
-            </h1>
-
-            <p className="text-sm text-zinc-600 mt-2">
-              Haber silinmiş, yayından kaldırılmış
-              veya adresi değişmiş olabilir.
-            </p>
           </div>
         </div>
       </main>
