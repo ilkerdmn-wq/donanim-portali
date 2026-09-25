@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Newspaper,
@@ -9,6 +10,13 @@ import {
   Layers3,
   ArrowRight,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Teknoloji Haberleri",
+  description:
+    "Donanım, yazılım, oyun, mobil teknoloji ve yapay zeka dünyasından güncel haberler.",
+  alternates: { canonical: "https://donanimportali.com/news" },
+};
 
 const categories = [
   {

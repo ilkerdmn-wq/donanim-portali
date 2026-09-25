@@ -4,6 +4,7 @@ import {
 } from "next/navigation";
 
 import NewsCategoryClient from "./NewsCategoryClient";
+import { publishedNews } from "@/app/lib/content-server";
 
 type PageProps = {
   params: Promise<{
@@ -19,40 +20,47 @@ const categorySeo: Record<
   {
     title: string;
     description: string;
+    dbName: string;
   }
 > = {
   genel: {
     title: "Genel Haberler",
+    dbName: "Genel",
     description:
       "Teknoloji dünyasından genel gelişmeler, duyurular ve güncel haberler.",
   },
 
   donanim: {
     title: "Donanım Haberleri",
+    dbName: "Donanım",
     description:
       "İşlemci, ekran kartı, anakart, bellek ve diğer donanım gelişmeleri.",
   },
 
   yazilim: {
     title: "Yazılım Haberleri",
+    dbName: "Yazılım",
     description:
       "İşletim sistemleri, uygulamalar, geliştirici araçları ve yazılım dünyasındaki gelişmeler.",
   },
 
   oyun: {
     title: "Oyun Haberleri",
+    dbName: "Oyun",
     description:
       "PC ve konsol oyunları, güncellemeler, performans ve oyun dünyasından gelişmeler.",
   },
 
   "yapay-zeka": {
     title: "Yapay Zeka Haberleri",
+    dbName: "Yapay Zeka",
     description:
       "Yapay zeka modelleri, araçlar, yeni teknolojiler ve sektördeki güncel gelişmeler.",
   },
 
   mobil: {
     title: "Mobil Haberler",
+    dbName: "Mobil",
     description:
       "Akıllı telefonlar, tabletler, mobil işletim sistemleri ve mobil teknoloji haberleri.",
   },
@@ -163,11 +171,14 @@ export default async function NewsCategoryPage({
     notFound();
   }
 
+  const news = await publishedNews(categorySeo[category].dbName);
+
   return (
     <NewsCategoryClient
       categorySlug={
         category
       }
+      initialNews={news}
     />
   );
 }

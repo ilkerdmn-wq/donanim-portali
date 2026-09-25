@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -15,19 +15,9 @@ import {
   CalendarDays,
 } from "lucide-react";
 
-import { supabase } from "../../lib/supabase";
+import type { PublishedNews } from "../../lib/content-server";
 
-type NewsItem = {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt: string | null;
-  image_url: string | null;
-  category: string;
-  published: boolean;
-  featured?: boolean;
-  created_at: string;
-};
+type NewsItem = PublishedNews;
 
 type CategoryInfo = {
   title: string;
@@ -88,10 +78,12 @@ const categoryMap: Record<string, CategoryInfo> = {
 
 type NewsCategoryClientProps = {
   categorySlug: string;
+  initialNews: NewsItem[];
 };
 
 export default function NewsCategoryClient({
   categorySlug,
+  initialNews,
 }: NewsCategoryClientProps) {
   const normalizedCategorySlug =
     decodeURIComponent(categorySlug || "")
@@ -101,43 +93,7 @@ export default function NewsCategoryClient({
   const categoryInfo =
     categoryMap[normalizedCategorySlug];
 
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!categoryInfo) {
-      setLoading(false);
-      return;
-    }
-
-    loadNews();
-  }, [normalizedCategorySlug]);
-
-  const loadNews = async () => {
-    if (!categoryInfo) return;
-
-    setLoading(true);
-
-    const { data, error } = await supabase
-      .from("news")
-      .select(
-        "id,title,slug,excerpt,image_url,category,published,featured,created_at"
-      )
-      .eq("category", categoryInfo.dbName)
-      .eq("published", true)
-      .order("featured", { ascending: false })
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Kategori haberleri yüklenemedi:", error);
-      setNews([]);
-      setLoading(false);
-      return;
-    }
-
-    setNews((data || []) as NewsItem[]);
-    setLoading(false);
-  };
+  const news = initialNews;
 
   const featuredNews = useMemo(() => {
     return news.find((item) => item.featured);
@@ -219,13 +175,7 @@ export default function NewsCategoryClient({
           </p>
         </div>
 
-        {loading ? (
-          <div className="min-h-[250px] rounded-3xl border border-zinc-800 bg-zinc-900/40 flex items-center justify-center">
-            <span className="text-sm text-zinc-600">
-              Haberler yükleniyor...
-            </span>
-          </div>
-        ) : news.length === 0 ? (
+        {news.length === 0 ? (
           <div className="min-h-[250px] rounded-3xl border border-zinc-800 bg-zinc-900/40 flex flex-col items-center justify-center">
             <Newspaper size={38} className="text-zinc-800 mb-4" />
 

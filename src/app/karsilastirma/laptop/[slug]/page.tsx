@@ -42,7 +42,7 @@ export async function generateMetadata({
   ) {
     return {
       title:
-        "Karşılaştırma Bulunamadı | Donanım Portalı",
+        "Karşılaştırma Bulunamadı",
       robots: {
         index: false,
         follow: false,
@@ -64,7 +64,7 @@ export async function generateMetadata({
 
   return {
     title:
-      `${comparison.title} | Donanım Portalı`,
+      comparison.title,
 
     description,
 

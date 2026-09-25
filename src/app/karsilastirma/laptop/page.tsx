@@ -16,7 +16,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Laptop Karşılaştırmaları | Donanım Portalı",
+  title: "Laptop Karşılaştırmaları",
 
   description:
     "Donanım Portalı'nda incelediğimiz laptop modellerini teknik özelliklerine göre karşılaştırın.",

@@ -1,10 +1,5 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
-
 import Link from "next/link";
 
 import {
@@ -17,51 +12,11 @@ import type {
   ManualComparison,
 } from "@/app/lib/manual-comparison";
 
-export default function HomeComparison() {
-  const [
-    comparisons,
-    setComparisons,
-  ] =
-    useState<ManualComparison[]>(
-      []
-    );
-
-  useEffect(() => {
-    let active = true;
-
-    void fetch(
-      "/api/laptop-comparison",
-      {
-        cache: "no-store",
-      }
-    )
-      .then(
-        (response) =>
-          response.json()
-      )
-      .then((data) => {
-        if (!active) {
-          return;
-        }
-
-        setComparisons(
-          Array.isArray(
-            data.comparisons
-          )
-            ? data.comparisons
-            : []
-        );
-      })
-      .catch(() => {
-        if (active) {
-          setComparisons([]);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
+export default function HomeComparison({
+  comparisons,
+}: {
+  comparisons: ManualComparison[];
+}) {
 
   const latestComparison =
     comparisons[0] || null;

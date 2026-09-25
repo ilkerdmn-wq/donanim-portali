@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Laptop, Loader2, Star, Tag } from "lucide-react";
-import { supabase } from "../lib/supabase";
+import { ArrowRight, CalendarDays, Laptop, Star, Tag } from "lucide-react";
 import type { Review } from "../lib/reviews";
 
 type HomeReview = Pick<Review, "id" | "slug" | "title" | "subtitle" | "excerpt" | "image_url" | "category" | "featured" | "published_at" | "created_at">;
@@ -15,35 +13,7 @@ function reviewDate(review: HomeReview) {
   }).format(date);
 }
 
-export default function HomeReviews() {
-  const [reviews, setReviews] = useState<HomeReview[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [failed, setFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-
-  useEffect(() => {
-    let active = true;
-    async function load() {
-      setLoading(true);
-      setFailed(false);
-      try {
-        const { data, error } = await supabase.from("reviews")
-          .select("id,slug,title,subtitle,excerpt,image_url,category,featured,published_at,created_at")
-          .eq("published", true)
-          .order("featured", { ascending: false })
-          .order("published_at", { ascending: false })
-          .limit(26);
-        if (error) throw error;
-        if (active) setReviews(data || []);
-      } catch {
-        if (active) setFailed(true);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-    void load();
-    return () => { active = false; };
-  }, [attempt]);
+export default function HomeReviews({ reviews }: { reviews: HomeReview[] }) {
 
   const featuredReview = reviews[0];
   const otherReviews = reviews.slice(1).sort((a, b) =>
@@ -58,16 +28,7 @@ export default function HomeReviews() {
         </h2>
         <span className="text-[11px] font-medium text-zinc-600">Manşet ve son incelemeler</span>
       </div>
-      {loading ? (
-        <div role="status" className="flex min-h-32 items-center justify-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-900/20 text-sm text-zinc-400">
-          <Loader2 size={20} className="animate-spin text-cyan-400" /> İncelemeler yükleniyor…
-        </div>
-      ) : failed ? (
-        <div role="status" className="rounded-2xl border border-zinc-800 bg-zinc-900/20 p-6 text-sm text-zinc-400">
-          İncelemeler şu anda yüklenemiyor.
-          <button type="button" onClick={() => setAttempt(value => value + 1)} className="ml-3 text-cyan-400 hover:underline">Tekrar dene</button>
-        </div>
-      ) : featuredReview ? (
+      {featuredReview ? (
         <>
           <Link href={`/incelemeler/${featuredReview.slug}`} className="group relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/60 transition-all hover:border-cyan-500/40">
             <div className="relative flex min-h-[300px] flex-col justify-end overflow-hidden bg-gradient-to-br from-zinc-900 to-zinc-950 md:min-h-[360px]">

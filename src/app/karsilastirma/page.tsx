@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Donanım Karşılaştırmaları | Donanım Portalı",
+  title: "Donanım Karşılaştırmaları",
   description:
     "Laptop ve diğer donanım kategorilerindeki ürünleri teknik özelliklerine göre karşılaştırın.",
   alternates: {

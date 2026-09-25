@@ -1,46 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   Newspaper,
   ArrowRight,
   CalendarDays,
   Tag,
-  Loader2,
   Star,
   BookOpen,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 
-import { supabase } from "../lib/supabase";
 import HomeReviews from "./HomeReviews";
 import HomeComparison from "./HomeComparison";
+import type { PublishedGuide, PublishedNews } from "../lib/content-server";
+import type { Review } from "../lib/reviews";
+import type { ManualComparison } from "../lib/manual-comparison";
 
-type NewsItem = {
-  id: number;
-  slug: string | null;
-  title: string;
-  excerpt: string | null;
-  image_url: string | null;
-  category: string | null;
-  published: boolean;
-  featured: boolean;
-  created_at: string;
-};
-
-type GuideItem = {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt: string | null;
-  cover_image_url: string | null;
-  category: string | null;
-  published: boolean;
-  created_at: string;
-  updated_at: string;
-};
+type NewsItem = PublishedNews;
+type GuideItem = PublishedGuide;
 
 const categorySlugs: Record<string, string> = {
   Genel: "genel",
@@ -51,49 +31,20 @@ const categorySlugs: Record<string, string> = {
   Mobil: "mobil",
 };
 
-export default function HomeNews() {
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [guides, setGuides] = useState<GuideItem[]>([]);
-  const [loading, setLoading] = useState(true);
+type HomeNewsProps = {
+  news: NewsItem[];
+  guides: GuideItem[];
+  reviews: Review[];
+  comparisons: ManualComparison[];
+};
+
+export default function HomeNews({
+  news,
+  guides,
+  reviews,
+  comparisons,
+}: HomeNewsProps) {
   const [guideStartIndex, setGuideStartIndex] = useState(0);
-
-  useEffect(() => {
-    loadHomeContent();
-  }, []);
-
-  const loadHomeContent = async () => {
-    setLoading(true);
-
-    const [
-      { data: newsData, error: newsError },
-      { data: guideData, error: guideError },
-    ] = await Promise.all([
-      supabase
-        .from("news")
-        .select("*")
-        .eq("published", true)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("guides")
-        .select(
-          "id,title,slug,excerpt,cover_image_url,category,published,created_at,updated_at"
-        )
-        .eq("published", true)
-        .order("updated_at", { ascending: false }),
-    ]);
-
-    if (newsError) {
-      console.error("ANA SAYFA HABER HATASI:", newsError);
-    }
-
-    if (guideError) {
-      console.error("ANA SAYFA REHBER HATASI:", guideError);
-    }
-
-    setNews((newsData || []) as NewsItem[]);
-    setGuides((guideData || []) as GuideItem[]);
-    setLoading(false);
-  };
 
   const createSlug = (text: string) => {
     return text
@@ -168,16 +119,7 @@ export default function HomeNews() {
 
   return (
     <section className="flex flex-col gap-8">
-      {loading && (
-        <div className="min-h-[180px] border border-zinc-800/60 rounded-2xl bg-zinc-900/20 flex items-center justify-center">
-          <Loader2
-            size={26}
-            className="animate-spin text-cyan-400"
-          />
-        </div>
-      )}
-
-      {!loading && news.length === 0 && (
+      {news.length === 0 && (
         <div className="p-10 border border-zinc-800/60 rounded-2xl bg-zinc-900/20 flex items-center justify-center min-h-[120px]">
           <span className="text-xs text-zinc-600 font-medium">
             Henüz yayınlanmış haber bulunmuyor.
@@ -185,7 +127,7 @@ export default function HomeNews() {
         </div>
       )}
 
-      {!loading && featuredNews && (
+      {featuredNews && (
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center px-1">
             <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
@@ -352,10 +294,10 @@ export default function HomeNews() {
         </div>
       )}
 
-      <HomeReviews />
-      <HomeComparison />
+      <HomeReviews reviews={reviews} />
+      <HomeComparison comparisons={comparisons} />
 
-      {!loading && (
+      {(
         <div className="flex flex-col gap-4 pt-1">
           <div className="flex justify-between items-center px-1">
             <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">

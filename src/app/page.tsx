@@ -14,6 +14,11 @@ import {
 import HomeNews from "./components/HomeNews";
 import SidebarGuides from "./components/SidebarGuides";
 import HomePoll from "./components/HomePoll";
+import { publishedGuides, publishedNews } from "./lib/content-server";
+import { publishedReviews } from "./lib/reviews-server";
+import { listComparisons } from "./lib/manual-comparison-server";
+
+export const dynamic = "force-dynamic";
 
 const SITE_URL =
   "https://donanimportali.com";
@@ -100,7 +105,13 @@ const quickTools = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [news, guides, reviews, comparisons] = await Promise.all([
+    publishedNews(),
+    publishedGuides(),
+    publishedReviews().catch(() => []),
+    listComparisons().catch(() => []),
+  ]);
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -159,7 +170,12 @@ export default function HomePage() {
             </div>
           </section>
 
-          <HomeNews />
+          <HomeNews
+            news={news}
+            guides={guides}
+            reviews={reviews}
+            comparisons={comparisons}
+          />
         </div>
 
         <div className="lg:col-span-4 flex flex-col gap-6">

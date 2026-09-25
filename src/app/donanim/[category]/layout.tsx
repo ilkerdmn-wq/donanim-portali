@@ -19,7 +19,7 @@ const categoryMetadata: Record<
 > = {
   islemciler: {
     title:
-      "İşlemciler ve CPU Modelleri | Donanım Portalı",
+      "İşlemciler ve CPU Modelleri",
 
     description:
       "İşlemci modellerini teknik özellikleriyle inceleyin. CPU modelleri, çekirdek yapıları, frekans değerleri ve donanım özelliklerini karşılaştırın.",
@@ -27,7 +27,7 @@ const categoryMetadata: Record<
 
   "ekran-kartlari": {
     title:
-      "Ekran Kartları ve GPU Modelleri | Donanım Portalı",
+      "Ekran Kartları ve GPU Modelleri",
 
     description:
       "Ekran kartı modellerini ve teknik özelliklerini inceleyin. GPU, bellek, bağlantı ve diğer donanım özelliklerini karşılaştırın.",
@@ -35,7 +35,7 @@ const categoryMetadata: Record<
 
   anakartlar: {
     title:
-      "Anakart Modelleri | Donanım Portalı",
+      "Anakart Modelleri",
 
     description:
       "Anakart modellerini soket, yonga seti, bellek desteği, bağlantılar ve diğer teknik özellikleriyle inceleyin.",
@@ -43,7 +43,7 @@ const categoryMetadata: Record<
 
   bellekler: {
     title:
-      "RAM ve Bellek Modelleri | Donanım Portalı",
+      "RAM ve Bellek Modelleri",
 
     description:
       "RAM ve bellek modellerini kapasite, bellek türü, hız ve diğer teknik özellikleriyle inceleyin.",
@@ -51,7 +51,7 @@ const categoryMetadata: Record<
 
   "guc-kaynaklari": {
     title:
-      "Güç Kaynakları ve PSU Modelleri | Donanım Portalı",
+      "Güç Kaynakları ve PSU Modelleri",
 
     description:
       "Güç kaynağı modellerini watt değeri, verimlilik, bağlantılar ve diğer teknik özellikleriyle inceleyin.",
@@ -59,7 +59,7 @@ const categoryMetadata: Record<
 
   depolama: {
     title:
-      "SSD ve Depolama Modelleri | Donanım Portalı",
+      "SSD ve Depolama Modelleri",
 
     description:
       "SSD ve depolama ürünlerini kapasite, bağlantı türü ve diğer teknik özellikleriyle inceleyin.",
@@ -80,7 +80,7 @@ export async function generateMetadata({
   if (!info) {
     return {
       title:
-        "Donanım | Donanım Portalı",
+        "Donanım",
 
       description:
         "Bilgisayar donanımı ürünlerini ve teknik özelliklerini inceleyin.",
