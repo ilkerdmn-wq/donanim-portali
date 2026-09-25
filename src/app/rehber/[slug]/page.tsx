@@ -17,7 +17,7 @@ import {
   Wrench,
 } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type Guide = {
   id: number;
@@ -95,7 +95,9 @@ async function getGuide(
             Authorization:
               `Bearer ${anonKey}`,
           },
-          cache: "no-store",
+          next: {
+            revalidate: 300,
+          },
         }
       );
 

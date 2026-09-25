@@ -7,7 +7,7 @@ import {
   Star,
 } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type GuideRow = {
   id: number;
@@ -119,8 +119,9 @@ async function getPublishedGuides(): Promise<
               `Bearer ${anonKey}`,
           },
 
-          cache:
-            "no-store",
+          next: {
+            revalidate: 300,
+          },
         }
       );
 
