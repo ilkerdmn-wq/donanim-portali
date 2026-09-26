@@ -528,6 +528,8 @@ function renderContent(
           <img
             src={src}
             alt={alt || "Rehber görseli"}
+            loading="lazy"
+            decoding="async"
             className="w-full h-auto object-cover"
           />
         </figure>
@@ -829,6 +831,7 @@ export default async function GuideDetailPage({
               alt={
                 guide.title
               }
+              decoding="async"
               className="aspect-video w-full object-cover"
             />
           </div>

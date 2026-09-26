@@ -427,6 +427,7 @@ export default function NewsDetailClient({
             <img
               src={news.image_url}
               alt={news.title}
+              decoding="async"
               className="w-full max-h-[600px] object-cover"
             />
           ) : (

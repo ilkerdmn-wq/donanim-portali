@@ -283,6 +283,7 @@ export function ReviewBody({
                 )}
                 alt="İnceleme görseli"
                 loading="lazy"
+                decoding="async"
                 className="w-full rounded-2xl"
               />
             ) : null;
