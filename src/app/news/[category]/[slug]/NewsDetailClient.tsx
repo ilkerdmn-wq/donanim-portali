@@ -27,6 +27,11 @@ type ContentBlock = {
   caption?: string;
 };
 
+type NewsSource = {
+  name: string;
+  url: string;
+};
+
 type NewsItem = {
   id: number;
   title: string;
@@ -97,42 +102,59 @@ function categoryToSlug(category: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function parseContent(content: any): ContentBlock[] {
-  if (!content) return [];
+function parseContent(content: any): { blocks: ContentBlock[]; source: NewsSource | null } {
+  const fallback = (value: string): { blocks: ContentBlock[]; source: null } => ({
+    blocks: [{ type: "paragraph", value }],
+    source: null,
+  });
 
-  if (Array.isArray(content)) {
-    return content;
-  }
+  if (!content) return { blocks: [], source: null };
+
+  let parsed = content;
 
   if (typeof content === "string") {
     try {
-      const parsed = JSON.parse(content);
-
-      if (Array.isArray(parsed)) {
-        return parsed;
-      }
-
-      return [
-        {
-          type: "paragraph",
-          value: content,
-        },
-      ];
+      parsed = JSON.parse(content);
     } catch {
-      return [
-        {
-          type: "paragraph",
-          value: content,
-        },
-      ];
+      return fallback(content);
     }
   }
 
-  return [];
+  if (Array.isArray(parsed)) {
+    return { blocks: parsed, source: null };
+  }
+
+  if (parsed && Array.isArray(parsed.blocks)) {
+    const sourceName =
+      typeof parsed.source?.name === "string" ? parsed.source.name.trim() : "";
+    const sourceUrl =
+      typeof parsed.source?.url === "string" ? parsed.source.url.trim() : "";
+
+    return {
+      blocks: parsed.blocks,
+      source: sourceName || sourceUrl ? { name: sourceName, url: sourceUrl } : null,
+    };
+  }
+
+  return typeof content === "string" ? fallback(content) : { blocks: [], source: null };
 }
 
 function ContentRenderer({ content }: { content: any }) {
-  const blocks = parseContent(content);
+  const { blocks, source } = parseContent(content);
+
+  let sourceUrl: string | null = null;
+
+  if (source?.url) {
+    try {
+      const parsedUrl = new URL(source.url);
+      sourceUrl =
+        parsedUrl.protocol === "https:" || parsedUrl.protocol === "http:"
+          ? parsedUrl.toString()
+          : null;
+    } catch {
+      sourceUrl = null;
+    }
+  }
 
   if (blocks.length === 0) {
     return (
@@ -255,6 +277,26 @@ function ContentRenderer({ content }: { content: any }) {
           </p>
         ) : null;
       })}
+
+      {source && (
+        <aside className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 px-5 py-4 text-sm text-zinc-300">
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-400">
+            Kaynak
+          </p>
+          {sourceUrl ? (
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex font-bold text-cyan-300 hover:text-cyan-200 underline underline-offset-4"
+            >
+              {source.name || new URL(sourceUrl).hostname}
+            </a>
+          ) : (
+            <p className="mt-2 font-bold">{source.name}</p>
+          )}
+        </aside>
+      )}
     </div>
   );
 }

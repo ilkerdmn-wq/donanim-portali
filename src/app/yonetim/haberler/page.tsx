@@ -97,6 +97,8 @@ export default function HaberYonetimiPage() {
   const [excerpt, setExcerpt] = useState("");
   const [category, setCategory] = useState("Genel");
   const [slug, setSlug] = useState("");
+  const [sourceName, setSourceName] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
   const [published, setPublished] = useState(false);
   const [featured, setFeatured] = useState(false);
 
@@ -191,6 +193,8 @@ export default function HaberYonetimiPage() {
     setExcerpt("");
     setCategory("Genel");
     setSlug("");
+    setSourceName("");
+    setSourceUrl("");
     setPublished(false);
     setFeatured(false);
 
@@ -208,14 +212,26 @@ export default function HaberYonetimiPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const parseStoredBlocks = (content: string | null): ContentBlock[] => {
-    if (!content) return [createBlock("paragraph")];
+  const parseStoredContent = (content: string | null) => {
+    const emptyContent = {
+      blocks: [createBlock("paragraph")],
+      sourceName: "",
+      sourceUrl: "",
+    };
+
+    if (!content) return emptyContent;
 
     try {
       const parsed = JSON.parse(content);
+      const storedBlocks = Array.isArray(parsed)
+        ? parsed
+        : Array.isArray(parsed?.blocks)
+          ? parsed.blocks
+          : null;
 
-      if (Array.isArray(parsed)) {
-        return parsed.map((block) => {
+      if (storedBlocks) {
+        return {
+          blocks: storedBlocks.map((block: any) => {
           const type: BlockType =
             block?.type === "image" ||
             block?.type === "h2" ||
@@ -231,18 +247,31 @@ export default function HaberYonetimiPage() {
             previewUrl: type === "image" ? String(block?.value || "") : "",
             fileName: type === "image" ? "Kayıtlı görsel" : "",
           };
-        });
+          }),
+          sourceName:
+            typeof parsed?.source?.name === "string"
+              ? parsed.source.name
+              : "",
+          sourceUrl:
+            typeof parsed?.source?.url === "string"
+              ? parsed.source.url
+              : "",
+        };
       }
     } catch {
       // Eski düz metin içerikleri paragraf olarak aç.
     }
 
-    return [
-      {
-        ...createBlock("paragraph"),
-        value: content,
-      },
-    ];
+    return {
+      blocks: [
+        {
+          ...createBlock("paragraph"),
+          value: content,
+        },
+      ],
+      sourceName: "",
+      sourceUrl: "",
+    };
   };
 
   const openEditEditor = (item: NewsItem) => {
@@ -260,7 +289,10 @@ export default function HaberYonetimiPage() {
     setCoverPreview(item.image_url || "");
     setCoverFileName(item.image_url ? "Kayıtlı kapak görseli" : "");
 
-    setContentBlocks(parseStoredBlocks(item.content));
+    const storedContent = parseStoredContent(item.content);
+    setContentBlocks(storedContent.blocks);
+    setSourceName(storedContent.sourceName);
+    setSourceUrl(storedContent.sourceUrl);
     setEditorOpen(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -464,6 +496,19 @@ export default function HaberYonetimiPage() {
       return false;
     }
 
+    if (sourceUrl.trim()) {
+      try {
+        const url = new URL(sourceUrl.trim());
+
+        if (url.protocol !== "https:" && url.protocol !== "http:") {
+          throw new Error("Geçersiz protokol");
+        }
+      } catch {
+        alert("Kaynak bağlantısını http:// veya https:// ile geçerli olarak gir.");
+        return false;
+      }
+    }
+
     if (
       !contentBlocks.some(
         (block) =>
@@ -559,11 +604,25 @@ export default function HaberYonetimiPage() {
         }
       }
 
+      const cleanSourceName = sourceName.trim();
+      const cleanSourceUrl = sourceUrl.trim();
+      const storedContent = {
+        blocks: savedBlocks,
+        ...(cleanSourceName || cleanSourceUrl
+          ? {
+              source: {
+                name: cleanSourceName || new URL(cleanSourceUrl).hostname,
+                url: cleanSourceUrl,
+              },
+            }
+          : {}),
+      };
+
       const payload = {
         title: title.trim(),
         slug: finalSlug,
         excerpt: excerpt.trim() || null,
-        content: JSON.stringify(savedBlocks),
+        content: JSON.stringify(storedContent),
         image_url: finalCoverUrl || null,
         category,
         published,
@@ -1156,6 +1215,42 @@ export default function HaberYonetimiPage() {
                     <p className="text-[9px] text-zinc-700 mt-2 break-all">
                       /news/{categorySlug}/{slug || "haber-basligi"}
                     </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 space-y-3">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-500">
+                        Kaynak Bilgisi
+                      </p>
+                      <p className="text-[10px] leading-4 text-zinc-600 mt-1">
+                        İsteğe bağlıdır. Girildiğinde haberin sonunda ziyaretçiye gösterilir.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-zinc-500 mb-2 block">
+                        Kaynak adı
+                      </label>
+                      <input
+                        value={sourceName}
+                        onChange={(e) => setSourceName(e.target.value)}
+                        placeholder="Örn. OpenAI Newsroom"
+                        className="w-full h-11 rounded-xl border border-zinc-800 bg-zinc-900 px-3 text-xs text-zinc-300 outline-none focus:border-cyan-500/50"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-zinc-500 mb-2 block">
+                        Kaynak bağlantısı
+                      </label>
+                      <input
+                        type="url"
+                        value={sourceUrl}
+                        onChange={(e) => setSourceUrl(e.target.value)}
+                        placeholder="https://ornek.com/haber"
+                        className="w-full h-11 rounded-xl border border-zinc-800 bg-zinc-900 px-3 text-xs text-zinc-300 outline-none focus:border-cyan-500/50"
+                      />
+                    </div>
                   </div>
 
                   <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden">
