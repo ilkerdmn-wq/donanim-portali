@@ -149,6 +149,9 @@ export default function HomeNews({
                 <img
                   src={featuredNews.image_url}
                   alt={featuredNews.title}
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.025] transition-transform duration-500"
                 />
 
@@ -241,6 +244,8 @@ export default function HomeNews({
                       <img
                         src={item.image_url}
                         alt={item.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
@@ -343,6 +348,8 @@ export default function HomeNews({
                       <img
                         src={guide.cover_image_url}
                         alt={guide.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
                       />
                     </div>

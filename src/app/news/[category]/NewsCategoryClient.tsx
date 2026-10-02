@@ -196,6 +196,9 @@ export default function NewsCategoryClient({
                       <img
                         src={featuredNews.image_url}
                         alt={featuredNews.title}
+                        loading="eager"
+                        fetchPriority="high"
+                        decoding="async"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -251,6 +254,8 @@ export default function NewsCategoryClient({
                         <img
                           src={item.image_url}
                           alt={item.title}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                         />
                       ) : (

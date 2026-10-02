@@ -831,6 +831,8 @@ export default async function GuideDetailPage({
               alt={
                 guide.title
               }
+              loading="eager"
+              fetchPriority="high"
               decoding="async"
               className="aspect-video w-full object-cover"
             />
