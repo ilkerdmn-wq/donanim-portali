@@ -38,6 +38,10 @@ type HomeNewsProps = {
   comparisons: ManualComparison[];
 };
 
+// Ana sayfa, arşiv sayfası değildir. Uzun haber listelerinin tamamını burada
+// render etmek mobilde gereksiz DOM ve görsel isteği oluşturuyordu.
+const HOME_NEWS_LIST_LIMIT = 12;
+
 export default function HomeNews({
   news,
   guides,
@@ -92,6 +96,8 @@ export default function HomeNews({
   const otherNews = featuredNews
     ? news.filter((item) => item.id !== featuredNews.id)
     : [];
+
+  const visibleOtherNews = otherNews.slice(0, HOME_NEWS_LIST_LIMIT);
 
   const visibleGuides =
     guides.length <= 1
@@ -233,7 +239,7 @@ export default function HomeNews({
             </div>
 
             <div className="max-h-[480px] space-y-2 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:#3f3f46_transparent] [scrollbar-width:thin]">
-              {otherNews.map((item) => (
+              {visibleOtherNews.map((item) => (
                 <Link
                   key={item.id}
                   href={getNewsUrl(item)}

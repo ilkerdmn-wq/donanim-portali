@@ -6,6 +6,8 @@ import type { Review } from "../lib/reviews";
 
 type HomeReview = Pick<Review, "id" | "slug" | "title" | "subtitle" | "excerpt" | "image_url" | "category" | "featured" | "published_at" | "created_at">;
 
+const HOME_REVIEW_LIST_LIMIT = 6;
+
 function reviewDate(review: HomeReview) {
   const date = new Date(review.published_at || review.created_at);
   return Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat("tr-TR", {
@@ -19,6 +21,7 @@ export default function HomeReviews({ reviews }: { reviews: HomeReview[] }) {
   const otherReviews = reviews.slice(1).sort((a, b) =>
     new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime()
   );
+  const visibleOtherReviews = otherReviews.slice(0, HOME_REVIEW_LIST_LIMIT);
 
   return (
     <section aria-labelledby="home-reviews-title" className="flex flex-col gap-4">
@@ -54,7 +57,7 @@ export default function HomeReviews({ reviews }: { reviews: HomeReview[] }) {
             <div className="rounded-2xl border border-zinc-800/70 bg-zinc-950/25 p-2">
               <div className="px-2.5 pb-2 pt-1 text-[10px] font-black uppercase tracking-wider text-zinc-500">Son İncelemeler</div>
               <div tabIndex={0} aria-label="Son incelemeler, diğer incelemeler için aşağı kaydırın" className="max-h-[322px] space-y-2 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:#3f3f46_transparent] [scrollbar-width:thin] focus-visible:outline-2 focus-visible:outline-cyan-400">
-                {otherReviews.map(review => (
+                {visibleOtherReviews.map(review => (
                   <Link key={review.id} href={`/incelemeler/${review.slug}`} className="group flex h-[102px] items-center gap-4 rounded-xl border border-zinc-800/70 bg-zinc-900/30 p-3 transition-all hover:border-cyan-500/30 hover:bg-zinc-900/60">
                     <div className="flex h-[76px] w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 sm:w-[112px]">
                       {review.image_url ? <img src={review.image_url} alt={review.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" /> : <Laptop size={26} className="text-zinc-800" />}

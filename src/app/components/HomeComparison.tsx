@@ -12,6 +12,8 @@ import type {
   ManualComparison,
 } from "@/app/lib/manual-comparison";
 
+const HOME_COMPARISON_LIST_LIMIT = 4;
+
 export default function HomeComparison({
   comparisons,
 }: {
@@ -22,7 +24,7 @@ export default function HomeComparison({
     comparisons[0] || null;
 
   const olderComparisons =
-    comparisons.slice(1);
+    comparisons.slice(1, HOME_COMPARISON_LIST_LIMIT + 1);
 
   const targetUrl =
     latestComparison
